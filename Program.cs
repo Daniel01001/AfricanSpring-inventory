@@ -43,6 +43,16 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddRazorPages();
 
+// Read-only product feed consumed by the public marketing site (different origin).
+// GET-only, no credentials, so allowing any origin is safe.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PublicSite", p => p
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .WithMethods("GET"));
+});
+
 var app = builder.Build();
 
 // Trust Render's proxy headers so the app knows it's really on HTTPS.
@@ -67,10 +77,28 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseCors("PublicSite");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Public product feed for the marketing site. Anonymous + CORS, active products only.
+app.MapGet("/api/products", async (AppDbContext db) =>
+    await db.Products
+        .Where(p => p.IsActive)
+        .OrderBy(p => p.Name)
+        .Select(p => new
+        {
+            id = p.Id,
+            name = p.Name,
+            unitType = p.UnitType,
+            unitPrice = p.UnitPrice
+        })
+        .ToListAsync())
+    .AllowAnonymous()
+    .RequireCors("PublicSite");
 
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
