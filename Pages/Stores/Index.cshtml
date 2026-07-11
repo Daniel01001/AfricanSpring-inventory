@@ -1,0 +1,106 @@
+@page
+@model AfricanSpringInventory.Pages.Stores.IndexModel
+@{
+    ViewData["Title"] = "Stores";
+    ViewData["Tab"] = "stores";
+    ViewData["Wide"] = true;
+
+    string Fridge(Store s) => s.FridgeArrangement switch
+    {
+        FridgeArrangement.WeProvideFridge => "Ours",
+        FridgeArrangement.StoreOwnsFridge => "Their own",
+        _ => "—"
+    };
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Stores</h1>
+        <p class="page-sub" style="margin:0">Customers and prospects across the pipeline.</p>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-page="/Stores/Create">
+        <svg class="icon"><use href="#i-plus" /></svg> Add store
+    </a>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="empty" style="margin-top:18px">No stores yet. Add the first one.</div>
+}
+else
+{
+    <div class="only-desktop table-card" style="margin-top:18px">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Fridge</th>
+                    <th class="right">Revenue</th>
+                    <th class="right">Outstanding</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr onclick="location.href='@Url.Page("/Stores/Details", new { id = row.Store.Id })'">
+                        <td>
+                            <div class="t-primary">@row.Store.Name</div>
+                            @if (!string.IsNullOrWhiteSpace(row.Store.Notes))
+                            {
+                                <div class="t-note">@row.Store.Notes</div>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(row.Store.ContactPerson))
+                            {
+                                <div>@row.Store.ContactPerson</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(row.Store.Phone))
+                            {
+                                <div class="t-note">@row.Store.Phone</div>
+                            }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(row.Store.Location) ? "—" : row.Store.Location)</td>
+                        <td><span class="badge @row.Store.Status.Badge()">@row.Store.Status.Label()</span></td>
+                        <td>@Fridge(row.Store)</td>
+                        <td class="right t-strong">R @row.Revenue.ToString("N0")</td>
+                        <td class="right t-strong" style="@(row.Outstanding > 0 ? "color:var(--danger)" : "")">R @row.Outstanding.ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="only-mobile list" style="margin-top:18px">
+        @foreach (var row in Model.Rows)
+        {
+            <a class="list-row" asp-page="/Stores/Details" asp-route-id="@row.Store.Id">
+                <span class="avatar">@string.Concat(row.Store.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpper(w[0])))</span>
+                <span class="row-main">
+                    <span class="primary">@row.Store.Name</span><br />
+                    <span class="secondary">
+                        <span class="badge @row.Store.Status.Badge()">@row.Store.Status.Label()</span>
+                        @if (!string.IsNullOrWhiteSpace(row.Store.Location))
+                        {
+                            <span>· @row.Store.Location</span>
+                        }
+                    </span>
+                </span>
+                <span class="row-right">
+                    @if (row.Outstanding > 0)
+                    {
+                        <span class="amount" style="color:var(--danger)">R @row.Outstanding.ToString("N2")</span>
+                    }
+                    else
+                    {
+                        <span class="secondary">Settled</span>
+                    }
+                    <svg class="icon chev"><use href="#i-chevron" /></svg>
+                </span>
+            </a>
+        }
+    </div>
+}

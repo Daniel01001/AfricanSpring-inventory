@@ -1,0 +1,36 @@
+@page
+@model AfricanSpringInventory.Pages.ActivityModel
+@{
+    ViewData["Title"] = "Activity";
+    ViewData["Tab"] = "activity";
+}
+
+<h1 class="page-title">Activity</h1>
+<p class="page-sub">Everything that's been logged, newest first.</p>
+
+@if (Model.Days.Count == 0)
+{
+    <div class="empty">Nothing logged yet. It'll all show up here.</div>
+}
+else
+{
+    foreach (var day in Model.Days)
+    {
+        <div class="feed-day">@day.Key.ToString("dddd, dd MMMM")</div>
+        <div class="list">
+            @foreach (var i in day)
+            {
+                <div class="list-row">
+                    <span class="avatar @(i.Kind == "stock" ? "ghost" : "")">
+                        <svg class="icon"><use href="#i-@(i.Kind == "delivery" ? "truck" : i.Kind == "payment" ? "cash" : "snowflake")" /></svg>
+                    </span>
+                    <span class="row-main">
+                        <span class="primary">@i.Title</span><br />
+                        <span class="secondary">@i.Sub</span>
+                    </span>
+                    <span class="amount" style="@(i.Positive ? "color:var(--ok)" : "")">@i.Amount</span>
+                </div>
+            }
+        </div>
+    }
+}

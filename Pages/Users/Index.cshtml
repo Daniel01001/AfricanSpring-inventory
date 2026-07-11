@@ -1,0 +1,34 @@
+@page
+@model AfricanSpringInventory.Pages.Users.IndexModel
+@{
+    ViewData["Title"] = "People";
+    ViewData["Tab"] = "users";
+}
+
+<div class="page-head">
+    <h1 class="page-title">People</h1>
+    <a class="btn btn-primary btn-sm" asp-page="/Users/Create">
+        <svg class="icon"><use href="#i-plus" /></svg> Add person
+    </a>
+</div>
+<p class="page-sub">Who can sign in, and what they can do.</p>
+
+<div class="list">
+    @foreach (var u in Model.People)
+    {
+        <a class="list-row" asp-page="/Users/Edit" asp-route-id="@u.Id">
+            <span class="avatar">@char.ToUpper(u.Name[0])</span>
+            <span class="row-main">
+                <span class="primary">@u.Name</span><br />
+                <span class="secondary">
+                    <span class="badge @(u.Role == UserRole.Owner ? "owner" : "")">@u.Role</span>
+                    @if (!u.IsActive)
+                    {
+                        <span class="badge declined">Disabled</span>
+                    }
+                </span>
+            </span>
+            <svg class="icon chev"><use href="#i-chevron" /></svg>
+        </a>
+    }
+</div>

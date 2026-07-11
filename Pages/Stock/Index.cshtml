@@ -1,0 +1,54 @@
+@page
+@model AfricanSpringInventory.Pages.Stock.IndexModel
+@{
+    ViewData["Title"] = "Inventory";
+    ViewData["Tab"] = "stock";
+    ViewData["Wide"] = true;
+}
+
+<div class="page-head">
+    <div>
+        <h1 class="page-title">Inventory</h1>
+        <p class="page-sub" style="margin:0">Add stock after production, or correct a count.</p>
+    </div>
+    <a class="btn btn-sm" asp-page="/Stock/Create">Detailed entry</a>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="empty" style="margin-top:18px">No products yet. Add one under Products first.</div>
+}
+else
+{
+    <div class="inv-grid" style="margin-top:18px">
+        @foreach (var r in Model.Rows)
+        {
+            <div class="inv-card">
+                <div class="inv-head">
+                    <span class="avatar ghost"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+                    <span class="n">@r.Name</span>
+                    @if (r.Low)
+                    {
+                        <span class="badge intalks">Low</span>
+                    }
+                </div>
+                <div class="inv-value">@r.OnHand.ToString("0.##")</div>
+                <div class="inv-meta">@r.Unit · R @r.Price.ToString("N2") each</div>
+
+                <form method="post" class="inv-actions">
+                    <input type="hidden" name="productId" value="@r.Id" />
+                    <input type="number" name="qty" min="0" step="0.01" inputmode="decimal" placeholder="0" aria-label="Quantity for @r.Name" />
+                    <button class="btn btn-sm btn-primary" type="submit" name="dir" value="add">
+                        <svg class="icon"><use href="#i-plus" /></svg> Add
+                    </button>
+                    <button class="btn btn-sm" type="submit" name="dir" value="remove">Remove</button>
+                </form>
+
+                @if (r.LastUpdated is not null)
+                {
+                    <div class="inv-updated">Last updated @r.LastUpdated.Value.ToString("dd MMM yyyy")</div>
+                }
+            </div>
+        }
+    </div>
+}

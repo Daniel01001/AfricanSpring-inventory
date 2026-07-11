@@ -1,0 +1,40 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+
+<div class="login-wrap">
+    <div class="login-brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+        <span>AfricanSpring Ice</span>
+    </div>
+
+    <div class="login-card">
+        <h1 class="login-title">Welcome back</h1>
+        <p class="login-sub">Sign in to log deliveries, payments and stock.</p>
+
+        <form method="post">
+            <div class="field">
+                <label for="UserId">Who are you?</label>
+                <select id="UserId" asp-for="UserId" asp-items="Model.People">
+                    <option value="">Select your name…</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="Pin">PIN</label>
+                <input id="Pin" asp-for="Pin" type="password" inputmode="numeric"
+                       autocomplete="off" placeholder="••••" />
+            </div>
+
+            @if (Model.Error is not null)
+            {
+                <p class="field-error" style="margin-bottom:12px">@Model.Error</p>
+            }
+
+            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+        </form>
+    </div>
+</div>

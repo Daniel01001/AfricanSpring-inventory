@@ -1,0 +1,52 @@
+@page
+@{
+    ViewData["Title"] = "More";
+    ViewData["Tab"] = "more";
+    var isOwner = User.IsInRole("Owner");
+}
+
+<h1 class="page-title">More</h1>
+<p class="page-sub">Signed in as @User.Identity!.Name</p>
+
+<div class="list">
+    <a class="list-row" asp-page="/Activity">
+        <span class="avatar"><svg class="icon"><use href="#i-activity" /></svg></span>
+        <span class="row-main">
+            <span class="primary">Activity</span><br />
+            <span class="secondary">Everything that's been logged</span>
+        </span>
+        <svg class="icon chev"><use href="#i-chevron" /></svg>
+    </a>
+    <a class="list-row" asp-page="/Products/Index">
+        <span class="avatar"><svg class="icon"><use href="#i-box" /></svg></span>
+        <span class="row-main">
+            <span class="primary">Products</span><br />
+            <span class="secondary">The ice you sell, and prices</span>
+        </span>
+        <svg class="icon chev"><use href="#i-chevron" /></svg>
+    </a>
+    <a class="list-row" asp-page="/Fridges/Index">
+        <span class="avatar"><svg class="icon"><use href="#i-fridge" /></svg></span>
+        <span class="row-main">
+            <span class="primary">Fridges</span><br />
+            <span class="secondary">Your fridges and where they are</span>
+        </span>
+        <svg class="icon chev"><use href="#i-chevron" /></svg>
+    </a>
+    @if (isOwner)
+    {
+        <a class="list-row" asp-page="/Users/Index">
+            <span class="avatar"><svg class="icon"><use href="#i-users" /></svg></span>
+            <span class="row-main">
+                <span class="primary">People</span><br />
+                <span class="secondary">Who can sign in</span>
+            </span>
+            <svg class="icon chev"><use href="#i-chevron" /></svg>
+        </a>
+    }
+</div>
+
+<div class="section-label">Account</div>
+<form asp-page="/Logout" method="post">
+    <button type="submit" class="btn btn-block">Sign out</button>
+</form>

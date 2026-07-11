@@ -1,0 +1,36 @@
+@page
+@model AfricanSpringInventory.Pages.Products.CreateModel
+@{
+    ViewData["Title"] = "Add product";
+}
+
+<a class="back" asp-page="/Products/Index"><svg class="icon"><use href="#i-back" /></svg> Products</a>
+<h1 class="page-title">Add product</h1>
+
+<form method="post">
+    <div class="field">
+        <label asp-for="Product.Name">Name</label>
+        <input asp-for="Product.Name" placeholder="e.g. 2kg Ice Bag" />
+        <span asp-validation-for="Product.Name" class="field-error"></span>
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="Product.UnitType">Sold as</label>
+            <input asp-for="Product.UnitType" placeholder="bag, block, kg" />
+        </div>
+        <div class="field">
+            <label asp-for="Product.UnitPrice">Price (R)</label>
+            <input asp-for="Product.UnitPrice" type="number" min="0" step="0.01" inputmode="decimal" />
+        </div>
+    </div>
+
+    <label class="toggle">
+        <input type="checkbox" asp-for="Product.IsActive" />
+        <span>Available for deliveries</span>
+    </label>
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Save product</button>
+    </div>
+</form>

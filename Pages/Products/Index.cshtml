@@ -1,0 +1,44 @@
+@page
+@model AfricanSpringInventory.Pages.Products.IndexModel
+@{
+    ViewData["Title"] = "Products";
+    ViewData["Tab"] = "products";
+}
+
+<div class="page-head">
+    <h1 class="page-title">Products</h1>
+    <a class="btn btn-primary btn-sm" asp-page="/Products/Create">
+        <svg class="icon"><use href="#i-plus" /></svg> Add
+    </a>
+</div>
+<p class="page-sub">The ice you sell, and its price.</p>
+
+@if (Model.Products.Count == 0)
+{
+    <div class="empty">No products yet. Add your first one.</div>
+}
+else
+{
+    <div class="list">
+        @foreach (var p in Model.Products)
+        {
+            <a class="list-row" asp-page="/Products/Edit" asp-route-id="@p.Id">
+                <span class="avatar ghost"><svg class="icon"><use href="#i-box" /></svg></span>
+                <span class="row-main">
+                    <span class="primary">@p.Name</span><br />
+                    <span class="secondary">
+                        per @p.UnitType
+                        @if (!p.IsActive)
+                        {
+                            <span class="badge">Hidden</span>
+                        }
+                    </span>
+                </span>
+                <span class="row-right">
+                    <span class="amount">R @p.UnitPrice.ToString("N2")</span>
+                    <svg class="icon chev"><use href="#i-chevron" /></svg>
+                </span>
+            </a>
+        }
+    </div>
+}

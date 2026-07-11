@@ -1,0 +1,63 @@
+@page
+@model AfricanSpringInventory.Pages.Stores.EditModel
+@{
+    ViewData["Title"] = "Edit store";
+}
+
+<a class="back" asp-page="/Stores/Details" asp-route-id="@Model.Store.Id"><svg class="icon"><use href="#i-back" /></svg> @Model.Store.Name</a>
+<h1 class="page-title">Edit store</h1>
+
+<form method="post">
+    <input type="hidden" asp-for="Store.Id" />
+
+    <div class="field">
+        <label asp-for="Store.Name">Store name</label>
+        <input asp-for="Store.Name" />
+        <span asp-validation-for="Store.Name" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Store.ContactPerson">Contact person</label>
+        <input asp-for="Store.ContactPerson" />
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="Store.Phone">Phone</label>
+            <input asp-for="Store.Phone" inputmode="tel" />
+        </div>
+        <div class="field">
+            <label asp-for="Store.Location">Location</label>
+            <input asp-for="Store.Location" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label asp-for="Store.Status">Pipeline status</label>
+        <select asp-for="Store.Status">
+            @foreach (var v in Enum.GetValues<StoreStatus>())
+            {
+                <option value="@v">@v.Label()</option>
+            }
+        </select>
+    </div>
+
+    <div class="field">
+        <label asp-for="Store.FridgeArrangement">Fridge arrangement</label>
+        <select asp-for="Store.FridgeArrangement">
+            @foreach (var v in Enum.GetValues<FridgeArrangement>())
+            {
+                <option value="@v">@v.Label()</option>
+            }
+        </select>
+    </div>
+
+    <div class="field">
+        <label asp-for="Store.Notes">Notes</label>
+        <textarea asp-for="Store.Notes"></textarea>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Save changes</button>
+    </div>
+</form>

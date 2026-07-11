@@ -1,0 +1,40 @@
+@page
+@model AfricanSpringInventory.Pages.Users.CreateModel
+@{
+    ViewData["Title"] = "Add person";
+}
+
+<a class="back" asp-page="/Users/Index"><svg class="icon"><use href="#i-back" /></svg> People</a>
+<h1 class="page-title">Add person</h1>
+<p class="page-sub">They'll sign in with their name and a PIN.</p>
+
+<form method="post" class="narrow">
+    <div class="field">
+        <label asp-for="Name">Name</label>
+        <input asp-for="Name" placeholder="e.g. Mongezi" autocomplete="off" />
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="Pin">PIN</label>
+            <input asp-for="Pin" type="password" inputmode="numeric" pattern="[0-9]*"
+                   minlength="4" maxlength="8" placeholder="4–8 digits" autocomplete="new-password" />
+        </div>
+        <div class="field">
+            <label asp-for="Role">Role</label>
+            <select asp-for="Role">
+                <option value="Friend">Friend — logs updates</option>
+                <option value="Owner">Owner — full access</option>
+            </select>
+        </div>
+    </div>
+
+    @if (Model.Error is not null)
+    {
+        <p class="field-error">@Model.Error</p>
+    }
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Add person</button>
+    </div>
+</form>

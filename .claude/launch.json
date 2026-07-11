@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--no-launch-profile"],
+      "port": 5080,
+      "autoPort": true,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  ]
+}

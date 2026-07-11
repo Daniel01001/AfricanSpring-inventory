@@ -1,0 +1,49 @@
+@page
+@model AfricanSpringInventory.Pages.Fridges.CreateModel
+@{
+    ViewData["Title"] = "Add fridge";
+}
+
+<a class="back" asp-page="/Fridges/Index"><svg class="icon"><use href="#i-back" /></svg> Fridges</a>
+<h1 class="page-title">Add fridge</h1>
+<p class="page-sub">Track a fridge you've bought or placed at a store.</p>
+
+<form method="post" class="narrow">
+    <div class="field">
+        <label asp-for="StoreId">At store</label>
+        <select asp-for="StoreId" asp-items="Model.Stores">
+            <option value="0">Nowhere yet — in storage</option>
+        </select>
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="SerialNumber">Serial number</label>
+            <input asp-for="SerialNumber" placeholder="Optional" autocomplete="off" />
+        </div>
+        <div class="field">
+            <label asp-for="Status">Status</label>
+            <select asp-for="Status">
+                @foreach (var v in Enum.GetValues<FridgeStatus>())
+                {
+                    <option value="@v">@v.Label()</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="field">
+        <label asp-for="DateInstalled">Date installed</label>
+        <input asp-for="DateInstalled" type="date" />
+        <p class="hint">Leave empty if it's not installed anywhere yet.</p>
+    </div>
+
+    <div class="field">
+        <label asp-for="Notes">Notes</label>
+        <textarea asp-for="Notes" placeholder="Optional"></textarea>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Save fridge</button>
+    </div>
+</form>

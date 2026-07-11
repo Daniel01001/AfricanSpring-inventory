@@ -1,0 +1,72 @@
+@page
+@model AfricanSpringInventory.Pages.Stock.CreateModel
+@{
+    ViewData["Title"] = "Stock entry";
+}
+
+<a class="back" asp-page="/Stock/Index"><svg class="icon"><use href="#i-back" /></svg> Inventory</a>
+<h1 class="page-title">Stock entry</h1>
+<p class="page-sub">Log ice you've made, or correct a count with a note.</p>
+
+@if (Model.OnHand.Count > 0)
+{
+    <div class="section-label">On hand now</div>
+    <div class="list" style="margin-bottom:8px">
+        @foreach (var r in Model.OnHand)
+        {
+            <div class="list-row">
+                <span class="primary">@r.Name</span>
+                <span class="amount">@r.Qty.ToString("0.##") <span class="secondary">@r.Unit</span></span>
+            </div>
+        }
+    </div>
+}
+
+<form method="post">
+    <div class="field">
+        <label>What happened?</label>
+        <div class="seg">
+            <label>
+                <input type="radio" asp-for="MovementType" value="Production" />
+                <span>Made ice</span>
+            </label>
+            <label>
+                <input type="radio" asp-for="MovementType" value="Adjustment" />
+                <span>Adjustment</span>
+            </label>
+        </div>
+        <p class="hint">Adjustment corrects a count — use a negative number for melt, spoilage or overcounts.</p>
+    </div>
+
+    <div class="field">
+        <label asp-for="ProductId">Product</label>
+        <select asp-for="ProductId" asp-items="Model.Products">
+            <option value="">Select a product…</option>
+        </select>
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="Quantity">Quantity</label>
+            <input asp-for="Quantity" type="number" step="0.01" inputmode="decimal" placeholder="0" />
+        </div>
+        <div class="field">
+            <label asp-for="MovementDate">Date</label>
+            <input asp-for="MovementDate" type="date" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label asp-for="Notes">Notes</label>
+        <textarea asp-for="Notes" placeholder="Optional"></textarea>
+    </div>
+
+    @if (Model.Error is not null)
+    {
+        <p class="field-error">@Model.Error</p>
+    }
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Save</button>
+    </div>
+</form>

@@ -1,0 +1,47 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+    ViewData["Tab"] = "home";
+}
+
+<h1 class="page-title">Hi @Model.FirstName</h1>
+<p class="page-sub">What happened today?</p>
+
+<a class="cta" asp-page="/Deliveries/Create">
+    <span class="cta-icon"><svg class="icon"><use href="#i-truck" /></svg></span>
+    <span>
+        <span class="cta-title">Log a delivery</span>
+        <span class="cta-sub">Ice dropped at a store — stock updates itself</span>
+    </span>
+    <span class="cta-go"><svg class="icon"><use href="#i-chevron" /></svg></span>
+</a>
+
+<div class="action-grid" style="margin-top:12px">
+    <a class="tile" asp-page="/Payments/Create">
+        <span class="tile-icon"><svg class="icon"><use href="#i-cash" /></svg></span>
+        <span>
+            <span class="t-title">Record payment</span>
+            <span class="t-sub">Money from a store</span>
+        </span>
+    </a>
+    <a class="tile" asp-page="/Stock/Index">
+        <span class="tile-icon"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+        <span>
+            <span class="t-title">Update stock</span>
+            <span class="t-sub">Made ice, or adjust</span>
+        </span>
+    </a>
+</div>
+
+<div class="section-label">Today</div>
+<div class="stat-grid">
+    <div class="stat">
+        <div class="value">@Model.DeliveriesToday</div>
+        <div class="label">Deliveries logged</div>
+    </div>
+    <div class="stat">
+        <div class="value">R @Model.ValueToday.ToString("N2")</div>
+        <div class="label">Value delivered</div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+@page
+@model AfricanSpringInventory.Pages.Fridges.IndexModel
+@{
+    ViewData["Title"] = "Fridges";
+    ViewData["Tab"] = "fridges";
+}
+
+<div class="page-head">
+    <h1 class="page-title">Fridges</h1>
+    <a class="btn btn-primary btn-sm" asp-page="/Fridges/Create">
+        <svg class="icon"><use href="#i-plus" /></svg> Add
+    </a>
+</div>
+<p class="page-sub">Fridges you own and where they're placed.</p>
+
+@if (Model.Fridges.Count == 0)
+{
+    <div class="empty">No fridges tracked yet. Add one when you buy or place a fridge.</div>
+}
+else
+{
+    <div class="list">
+        @foreach (var f in Model.Fridges)
+        {
+            <a class="list-row" asp-page="/Fridges/Edit" asp-route-id="@f.Id">
+                <span class="avatar ghost"><svg class="icon"><use href="#i-fridge" /></svg></span>
+                <span class="row-main">
+                    <span class="primary">@(f.Store?.Name ?? "Not placed yet")</span><br />
+                    <span class="secondary">@(string.IsNullOrWhiteSpace(f.SerialNumber) ? "No serial" : f.SerialNumber)</span>
+                </span>
+                <span class="row-right">
+                    <span class="badge @(f.Status == FridgeStatus.Installed ? "installed" : f.Status == FridgeStatus.Faulty ? "faulty" : "")">@f.Status.Label()</span>
+                    <svg class="icon chev"><use href="#i-chevron" /></svg>
+                </span>
+            </a>
+        }
+    </div>
+}

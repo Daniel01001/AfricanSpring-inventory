@@ -1,0 +1,103 @@
+@page
+@model AfricanSpringInventory.Pages.Stores.DetailsModel
+@{
+    ViewData["Title"] = Model.Store.Name;
+    ViewData["Tab"] = "stores";
+}
+
+<a class="back" asp-page="/Stores/Index"><svg class="icon"><use href="#i-back" /></svg> Stores</a>
+
+<div class="page-head">
+    <h1 class="page-title">@Model.Store.Name</h1>
+    <a class="btn btn-sm" asp-page="/Stores/Edit" asp-route-id="@Model.Store.Id">Edit</a>
+</div>
+
+<div class="pill-row" style="margin-bottom:16px">
+    <span class="badge @Model.Store.Status.Badge()">@Model.Store.Status.Label()</span>
+    <span class="badge">@Model.Store.FridgeArrangement.Label()</span>
+</div>
+
+<div class="balance" style="margin-bottom:12px">
+    <div>
+        <div class="b-label">Outstanding</div>
+        <div class="b-value @(Model.Outstanding > 0 ? "owe" : "ok")">R @Model.Outstanding.ToString("N2")</div>
+    </div>
+    <div>
+        <div class="b-label">Delivered to date</div>
+        <div class="b-value">R @Model.TotalDelivered.ToString("N2")</div>
+    </div>
+</div>
+
+<div class="action-grid" style="margin-top:12px">
+    <a class="btn btn-primary" asp-page="/Deliveries/Create" asp-route-storeId="@Model.Store.Id">Log delivery</a>
+    <a class="btn" asp-page="/Payments/Create" asp-route-storeId="@Model.Store.Id">Record payment</a>
+</div>
+
+@if (Model.Store.ContactPerson is not null || Model.Store.Phone is not null || Model.Store.Location is not null)
+{
+    <div class="section-label">Contact</div>
+    <div class="card">
+        <dl class="dl">
+            @if (!string.IsNullOrWhiteSpace(Model.Store.ContactPerson))
+            {
+                <div class="row"><dt>Person</dt><dd>@Model.Store.ContactPerson</dd></div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Store.Phone))
+            {
+                <div class="row"><dt>Phone</dt><dd><a href="tel:@Model.Store.Phone">@Model.Store.Phone</a></dd></div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Store.Location))
+            {
+                <div class="row"><dt>Location</dt><dd>@Model.Store.Location</dd></div>
+            }
+        </dl>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Store.Notes))
+{
+    <div class="section-label">Notes</div>
+    <div class="card muted">@Model.Store.Notes</div>
+}
+
+<div class="section-label">Recent deliveries</div>
+@if (Model.Deliveries.Count == 0)
+{
+    <div class="empty">No deliveries yet.</div>
+}
+else
+{
+    <div class="list">
+        @foreach (var d in Model.Deliveries)
+        {
+            <div class="list-row">
+                <span class="row-main">
+                    <span class="primary">@d.Date.ToString("ddd, dd MMM")</span><br />
+                    <span class="secondary">by @d.By</span>
+                </span>
+                <span class="amount">R @d.Total.ToString("N2")</span>
+            </div>
+        }
+    </div>
+}
+
+<div class="section-label">Recent payments</div>
+@if (Model.Payments.Count == 0)
+{
+    <div class="empty">No payments yet.</div>
+}
+else
+{
+    <div class="list">
+        @foreach (var p in Model.Payments)
+        {
+            <div class="list-row">
+                <span class="row-main">
+                    <span class="primary">@p.PaymentDate.ToString("ddd, dd MMM")</span><br />
+                    <span class="secondary">@p.Method.Label()</span>
+                </span>
+                <span class="amount" style="color:var(--ok)">R @p.Amount.ToString("N2")</span>
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,85 @@
+@page
+@model AfricanSpringInventory.Pages.Deliveries.CreateModel
+@{
+    ViewData["Title"] = "Log delivery";
+}
+
+<a class="back" asp-page="/Index"><svg class="icon"><use href="#i-back" /></svg> Home</a>
+<h1 class="page-title">Log delivery</h1>
+<p class="page-sub">Stock is deducted automatically.</p>
+
+<form method="post">
+    <div class="field">
+        <label asp-for="StoreId">Store</label>
+        <select asp-for="StoreId" asp-items="Model.Stores">
+            <option value="">Select a store…</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label asp-for="DeliveryDate">Date</label>
+        <input asp-for="DeliveryDate" type="date" />
+    </div>
+
+    <label class="section-label" style="margin-top:8px">Products</label>
+    @if (Model.Lines.Count == 0)
+    {
+        <div class="empty">No products set up yet.</div>
+    }
+    else
+    {
+        <div class="list">
+            @for (var i = 0; i < Model.Lines.Count; i++)
+            {
+                <div class="qty-row">
+                    <span>
+                        <span class="q-name">@Model.Lines[i].Name</span><br />
+                        <span class="q-price">R @Model.Lines[i].UnitPrice.ToString("N2") / @Model.Lines[i].UnitType</span>
+                    </span>
+                    <input asp-for="Lines[i].Quantity" type="number" min="0" step="0.01"
+                           inputmode="decimal" placeholder="0" data-price="@Model.Lines[i].UnitPrice" />
+                    <input type="hidden" asp-for="Lines[i].ProductId" />
+                </div>
+            }
+        </div>
+
+        <div class="total-row">
+            <span>Total</span>
+            <span class="amount">R <span id="grand-total">0.00</span></span>
+        </div>
+    }
+
+    <div class="field" style="margin-top:8px">
+        <label asp-for="Notes">Notes</label>
+        <textarea asp-for="Notes" placeholder="Optional"></textarea>
+    </div>
+
+    @if (Model.Error is not null)
+    {
+        <p class="field-error">@Model.Error</p>
+    }
+
+    <div class="action-bar">
+        <button class="btn btn-primary btn-block" type="submit">Save delivery</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            const qtys = document.querySelectorAll('.qty-row input[type=number]');
+            const out = document.getElementById('grand-total');
+            function recalc() {
+                let total = 0;
+                qtys.forEach(function (i) {
+                    const q = parseFloat(i.value) || 0;
+                    const p = parseFloat(i.dataset.price) || 0;
+                    total += q * p;
+                });
+                if (out) out.textContent = total.toFixed(2);
+            }
+            qtys.forEach(function (i) { i.addEventListener('input', recalc); });
+            recalc();
+        })();
+    </script>
+}

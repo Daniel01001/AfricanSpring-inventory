@@ -1,0 +1,103 @@
+@page
+@model AfricanSpringInventory.Pages.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Tab"] = "dashboard";
+    ViewData["Wide"] = true;
+}
+
+<div class="page-head" style="margin-bottom:22px">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub" style="margin:0">A quick pulse on deliveries, revenue and stock.</p>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-page="/Deliveries/Create">Log delivery <svg class="icon"><use href="#i-chevron" /></svg></a>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">Deliveries this week</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-truck" /></svg></span>
+        </div>
+        <div class="kpi-value">@Model.DeliveriesThisWeek</div>
+        <div class="kpi-sub">@Model.UnitsThisWeek.ToString("0.##") units moved</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">Total revenue</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-trend" /></svg></span>
+        </div>
+        <div class="kpi-value">R @Model.TotalRevenue.ToString("N0")</div>
+        <div class="kpi-sub">@Model.TotalDeliveryCount all-time deliveries</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">Outstanding</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-wallet" /></svg></span>
+        </div>
+        <div class="kpi-value @(Model.TotalOutstanding > 0 ? "neg" : "")">R @Model.TotalOutstanding.ToString("N0")</div>
+        <div class="kpi-sub">@Model.OwingCount store(s) owe</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">Stock on hand</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+        </div>
+        <div class="kpi-value">@Model.StockUnits.ToString("0.##")</div>
+        <div class="kpi-sub">@Model.ProductCount products</div>
+    </div>
+</div>
+
+<div class="cols" style="margin-top:20px">
+    <div class="card">
+        <div class="page-head" style="margin-bottom:14px">
+            <h2 class="section-label" style="margin:0">Recent deliveries</h2>
+            <a class="view-all" asp-page="/Activity">View all →</a>
+        </div>
+        @if (Model.Recent.Count == 0)
+        {
+            <div class="empty">No deliveries yet.</div>
+        }
+        else
+        {
+            <div class="list" style="border:none;box-shadow:none">
+                @foreach (var d in Model.Recent)
+                {
+                    <a class="list-row" asp-page="/Stores/Details" asp-route-id="@d.StoreId" style="padding-left:0;padding-right:0">
+                        <span class="row-main">
+                            <span class="primary">@d.Store</span><br />
+                            <span class="secondary">@d.Date.ToString("dd MMM") · @d.Items</span>
+                        </span>
+                        <span class="amount">R @d.Total.ToString("N2")</span>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h2 class="section-label" style="margin:0 0 6px">Pipeline</h2>
+        @foreach (var p in Model.Pipeline)
+        {
+            <div class="pipe-row">
+                <span class="p-name">@p.Status.Label()</span>
+                <span class="pipe-count">@p.Count</span>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Model.Outstanding.Count > 0)
+{
+    <div class="section-label">Outstanding by store</div>
+    <div class="list">
+        @foreach (var o in Model.Outstanding)
+        {
+            <div class="list-row">
+                <span class="row-main"><span class="primary">@o.Name</span></span>
+                <span class="amount" style="color:var(--danger)">R @o.Amount.ToString("N2")</span>
+            </div>
+        }
+    </div>
+}
