@@ -85,8 +85,10 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 // Public product feed for the marketing site. Anonymous + CORS, active products only.
-app.MapGet("/api/products", async (AppDbContext db) =>
-    await db.Products
+app.MapGet("/api/products", async (AppDbContext db, HttpContext http) =>
+{
+    http.Response.Headers.CacheControl = "public, max-age=60";
+    return await db.Products
         .Where(p => p.IsActive)
         .OrderBy(p => p.Name)
         .Select(p => new
@@ -96,9 +98,13 @@ app.MapGet("/api/products", async (AppDbContext db) =>
             unitType = p.UnitType,
             unitPrice = p.UnitPrice
         })
-        .ToListAsync())
+        .ToListAsync();
+})
     .AllowAnonymous()
     .RequireCors("PublicSite");
+
+// Lightweight liveness endpoint for uptime pings (keeps the free instance warm).
+app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
 
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
