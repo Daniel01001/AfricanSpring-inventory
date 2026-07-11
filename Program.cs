@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 using AfricanSpringInventory.Data;
 using AfricanSpringInventory.Models;
+using AfricanSpringInventory.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -43,6 +45,9 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddRazorPages();
+
+// Sends Web Push notifications to subscribed app devices when orders arrive.
+builder.Services.AddScoped<PushNotifier>();
 
 // Public API consumed by the marketing site (different origin): the product feed
 // (GET) and order submissions (POST). No credentials, so any origin is safe.
@@ -125,7 +130,7 @@ app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
 
 // Public order intake from the marketing site. Anonymous + CORS + rate limited,
 // with a honeypot field to catch bots.
-app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db) =>
+app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier push) =>
 {
     // Bots fill hidden fields a human never sees. Pretend success so we don't tip them off.
     if (!string.IsNullOrWhiteSpace(dto.Website))
@@ -153,11 +158,70 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db) =>
         Source = "website"
     });
     await db.SaveChangesAsync();
+
+    // Ping the app users' devices. Never let a notification failure fail the order.
+    try
+    {
+        await push.NotifyAllAsync(
+            "New website order",
+            product.Length > 0 ? $"{Cap(name, 80)} · {product}" : Cap(name, 80),
+            "/Orders/Index");
+    }
+    catch { /* best-effort */ }
+
     return Results.Ok(new { ok = true });
 })
     .AllowAnonymous()
     .RequireCors("PublicSite")
     .RequireRateLimiting("orders");
+
+// --- Web Push subscription management (signed-in app users only) ---
+
+// Public VAPID key the browser needs to subscribe.
+app.MapGet("/push/publickey", (IConfiguration cfg) =>
+    Results.Ok(new { publicKey = cfg["WebPush:PublicKey"] ?? "" }));
+
+app.MapPost("/push/subscribe", async (PushSubDto dto, AppDbContext db, HttpContext ctx) =>
+{
+    var idClaim = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (!int.TryParse(idClaim, out var userId)) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(dto.Endpoint) || string.IsNullOrWhiteSpace(dto.P256dh) || string.IsNullOrWhiteSpace(dto.Auth))
+        return Results.BadRequest();
+
+    var existing = await db.PushDevices.FirstOrDefaultAsync(d => d.Endpoint == dto.Endpoint);
+    if (existing is null)
+    {
+        db.PushDevices.Add(new PushDevice
+        {
+            UserId = userId,
+            Endpoint = dto.Endpoint!,
+            P256dh = dto.P256dh!,
+            Auth = dto.Auth!
+        });
+    }
+    else
+    {
+        existing.UserId = userId;
+        existing.P256dh = dto.P256dh!;
+        existing.Auth = dto.Auth!;
+    }
+    await db.SaveChangesAsync();
+    return Results.Ok(new { ok = true });
+});
+
+app.MapPost("/push/unsubscribe", async (PushUnsubDto dto, AppDbContext db) =>
+{
+    if (!string.IsNullOrWhiteSpace(dto.Endpoint))
+    {
+        var d = await db.PushDevices.FirstOrDefaultAsync(x => x.Endpoint == dto.Endpoint);
+        if (d is not null)
+        {
+            db.PushDevices.Remove(d);
+            await db.SaveChangesAsync();
+        }
+    }
+    return Results.Ok(new { ok = true });
+});
 
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
@@ -172,3 +236,7 @@ app.Run();
 // Shape of the JSON body posted by the marketing site's order form.
 // `Website` is the honeypot — real users leave it blank.
 record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website);
+
+// Push subscription payloads from the browser.
+record PushSubDto(string? Endpoint, string? P256dh, string? Auth);
+record PushUnsubDto(string? Endpoint);

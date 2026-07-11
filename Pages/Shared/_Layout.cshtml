@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="manifest" href="~/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="~/apple-touch-icon.png" />
 </head>
 <body class="shell @(signedIn ? "authed" : "unauth") @(tab is null ? "no-tabbar" : "")">
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -145,6 +147,10 @@
                 <svg class="icon"><use href="#i-more" /></svg><span>More</span>
             </a>
         </nav>
+    }
+    @if (signedIn)
+    {
+        <script src="~/js/push.js" asp-append-version="true"></script>
     }
     @await RenderSectionAsync("Scripts", required: false)
 </body>

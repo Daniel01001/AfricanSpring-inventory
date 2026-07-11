@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Fridge> Fridges => Set<Fridge>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<PushDevice> PushDevices => Set<PushDevice>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -78,6 +79,12 @@ public class AppDbContext : DbContext
         b.Entity<Order>()
             .HasOne(x => x.Product).WithMany()
             .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.SetNull);
+
+        // Push subscriptions belong to a user and go away with them.
+        b.Entity<PushDevice>().HasIndex(x => x.Endpoint).IsUnique();
+        b.Entity<PushDevice>()
+            .HasOne(x => x.User).WithMany()
+            .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
 
         b.Entity<User>().HasIndex(x => x.Name);
         b.Entity<Delivery>().HasIndex(x => x.DeliveryDate);
