@@ -1,6 +1,6 @@
 {
-  "name": "AfricanSpring Ice",
-  "short_name": "AS Ice",
+  "name": "AfricanSpring",
+  "short_name": "AfricanSpring",
   "description": "Ice business tracker — deliveries, stock, payments and website orders.",
   "start_url": "/",
   "scope": "/",
