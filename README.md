@@ -37,16 +37,30 @@ Cloud DBs (Neon/Supabase) include a browser SQL editor.
 
 ## First login
 Seeded on an empty database:
-- **Daniel** — Owner (read-only dashboard) — PIN `1234`
-- **Friend** — Friend (logs deliveries/payments/stock) — PIN `0000`
+- **Daniel** — Owner — PIN `1234`
+- **Mongezi**, **Minenhle** — Friends — PIN `0000`
 
-Override seed PINs with env vars `SEED_OWNER_PIN` / `SEED_FRIEND_PIN`. Change them after first login.
+Override seed PINs with env vars `SEED_OWNER_PIN` / `SEED_FRIEND_PIN`. The Owner can
+manage people (add / disable / reset PIN) in-app under **People**.
 
-## Deploy to Render
+## Deploy to Render (blueprint)
+
+The repo ships a `Dockerfile` and `render.yaml` that provision the web service **and**
+a free Postgres, wired together.
+
 1. Push this repo to GitHub.
-2. Render → New → Web Service → connect the repo (auto-detects .NET).
-3. Add a free Render PostgreSQL; Render injects `DATABASE_URL`.
-4. Deploy. Migrations + seed run automatically on first boot.
+2. Render → **New → Blueprint** → pick the repo. Render reads `render.yaml`, creates
+   `africanspring-ice` (Docker web service) + `africanspring-db` (free Postgres), and
+   injects `DATABASE_URL` automatically.
+3. (Optional) Set `SEED_OWNER_PIN` / `SEED_FRIEND_PIN` in the service's Environment tab
+   before the first deploy.
+4. Apply. Migrations + seed run automatically on first boot; the app binds `$PORT`.
+
+Notes:
+- Free web service sleeps after 15 min idle (~30–60s cold start) — fine for internal use.
+- Render's **free Postgres expires after ~30 days**. For a longer-lived free DB, delete the
+  `databases:` block in `render.yaml` and instead set `DATABASE_URL` (Environment tab) to a
+  free **Neon** or **Supabase** connection string — the app parses that URL format too.
 
 ## Data model
 `Users, Stores, Products, Deliveries, DeliveryItems, Payments, Fridges, StockMovements`.
