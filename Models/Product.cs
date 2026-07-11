@@ -15,6 +15,10 @@ public class Product
 
     public decimal UnitPrice { get; set; }
 
+    // When on-hand stock falls to or below this, the product is flagged low.
+    // 0 means no low-stock alert for this product.
+    public decimal ReorderThreshold { get; set; }
+
     public bool IsActive { get; set; } = true;
 
     public ICollection<DeliveryItem> DeliveryItems { get; set; } = new List<DeliveryItem>();

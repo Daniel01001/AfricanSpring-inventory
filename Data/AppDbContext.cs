@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Fridge> Fridges => Set<Fridge>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<Order> Orders => Set<Order>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -27,9 +28,11 @@ public class AppDbContext : DbContext
         b.Entity<Fridge>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
         b.Entity<Payment>().Property(x => x.Method).HasConversion<string>().HasMaxLength(20);
         b.Entity<StockMovement>().Property(x => x.MovementType).HasConversion<string>().HasMaxLength(20);
+        b.Entity<Order>().Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
 
         // Money / quantity precision.
         b.Entity<Product>().Property(x => x.UnitPrice).HasPrecision(12, 2);
+        b.Entity<Product>().Property(x => x.ReorderThreshold).HasPrecision(12, 2);
         b.Entity<DeliveryItem>().Property(x => x.Quantity).HasPrecision(12, 2);
         b.Entity<DeliveryItem>().Property(x => x.UnitPrice).HasPrecision(12, 2);
         b.Entity<DeliveryItem>().Property(x => x.LineTotal).HasPrecision(12, 2);
@@ -71,9 +74,15 @@ public class AppDbContext : DbContext
             .HasOne(x => x.Store).WithMany(s => s.Fridges)
             .HasForeignKey(x => x.StoreId).OnDelete(DeleteBehavior.SetNull);
 
+        // Orders link loosely to a product; keep the order if the product is removed.
+        b.Entity<Order>()
+            .HasOne(x => x.Product).WithMany()
+            .HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.SetNull);
+
         b.Entity<User>().HasIndex(x => x.Name);
         b.Entity<Delivery>().HasIndex(x => x.DeliveryDate);
         b.Entity<Payment>().HasIndex(x => x.PaymentDate);
         b.Entity<StockMovement>().HasIndex(x => x.MovementDate);
+        b.Entity<Order>().HasIndex(x => x.CreatedAt);
     }
 }

@@ -32,4 +32,16 @@ public static class DisplayExtensions
     };
 
     public static string Label(this PaymentMethod m) => m.ToString();
+
+    public static string Label(this OrderStatus s) => s.ToString();
+
+    // Reuse the store-status badge colours for order statuses.
+    public static string Badge(this OrderStatus s) => s switch
+    {
+        OrderStatus.New => "prospect",
+        OrderStatus.Contacted => "intalks",
+        OrderStatus.Fulfilled => "supplying",
+        OrderStatus.Cancelled => "declined",
+        _ => ""
+    };
 }

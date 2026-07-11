@@ -3,7 +3,7 @@
     var tab = ViewData["Tab"] as string;
     var isOwner = User.IsInRole("Owner");
     var wide = ViewData["Wide"] as bool? == true;
-    var moreTabs = new[] { "products", "fridges", "users", "activity", "more" };
+    var moreTabs = new[] { "orders", "products", "fridges", "users", "activity", "more" };
     var onMore = tab is not null && moreTabs.Contains(tab);
 }
 <!DOCTYPE html>
@@ -38,6 +38,7 @@
             <symbol id="i-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol>
             <symbol id="i-trend" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
             <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M18 12a1 1 0 0 0 0 2h3v-2z"/></symbol>
+            <symbol id="i-order" viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1z"/><path d="M9 4h6"/><path d="M9 12h6"/><path d="M9 16h4"/></symbol>
         </defs>
     </svg>
 
@@ -65,6 +66,9 @@
                     <svg class="icon"><use href="#i-activity" /></svg> Activity
                 </a>
                 <div class="nav-label">Business</div>
+                <a class="nav-item @(tab == "orders" ? "on" : "")" asp-page="/Orders/Index">
+                    <svg class="icon"><use href="#i-order" /></svg> Orders
+                </a>
                 <a class="nav-item @(tab == "stores" ? "on" : "")" asp-page="/Stores/Index">
                     <svg class="icon"><use href="#i-store" /></svg> Stores
                 </a>

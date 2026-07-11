@@ -21,9 +21,13 @@ public class DashboardModel : PageModel
     public int OwingCount { get; set; }
     public decimal StockUnits { get; set; }
     public int ProductCount { get; set; }
+    public int NewOrders { get; set; }
 
     public record NamedAmount(string Name, decimal Amount);
     public List<NamedAmount> Outstanding { get; set; } = new();
+
+    public record LowStockItem(string Name, decimal OnHand, decimal Threshold);
+    public List<LowStockItem> LowStock { get; set; } = new();
 
     public record RecentDelivery(int StoreId, string Store, DateOnly Date, string Items, decimal Total);
     public List<RecentDelivery> Recent { get; set; } = new();
@@ -55,7 +59,16 @@ public class DashboardModel : PageModel
 
         var onHand = await Finance.StockOnHandAsync(_db);
         StockUnits = onHand.Values.Sum();
-        ProductCount = await _db.Products.CountAsync(p => p.IsActive);
+
+        var activeProducts = await _db.Products.Where(p => p.IsActive).ToListAsync();
+        ProductCount = activeProducts.Count;
+        LowStock = activeProducts
+            .Where(p => p.ReorderThreshold > 0 && (onHand.TryGetValue(p.Id, out var q) ? q : 0m) <= p.ReorderThreshold)
+            .Select(p => new LowStockItem(p.Name, onHand.TryGetValue(p.Id, out var qty) ? qty : 0m, p.ReorderThreshold))
+            .OrderBy(x => x.OnHand)
+            .ToList();
+
+        NewOrders = await _db.Orders.CountAsync(o => o.Status == OrderStatus.New);
 
         var recent = await _db.Deliveries
             .OrderByDescending(d => d.DeliveryDate).ThenByDescending(d => d.Id)

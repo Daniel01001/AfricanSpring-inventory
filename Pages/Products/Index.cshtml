@@ -28,6 +28,10 @@ else
                     <span class="primary">@p.Name</span><br />
                     <span class="secondary">
                         per @p.UnitType
+                        @if (Model.IsLow(p))
+                        {
+                            <span class="badge declined">Low stock</span>
+                        }
                         @if (!p.IsActive)
                         {
                             <span class="badge">Hidden</span>

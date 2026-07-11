@@ -27,6 +27,11 @@
         </div>
     </div>
 
+    <div class="field">
+        <label asp-for="Product.ReorderThreshold">Low-stock alert at (units, 0 = off)</label>
+        <input asp-for="Product.ReorderThreshold" type="number" min="0" step="0.01" inputmode="decimal" />
+    </div>
+
     <label class="toggle">
         <input type="checkbox" asp-for="Product.IsActive" />
         <span>Available for deliveries</span>

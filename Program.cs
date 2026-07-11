@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using AfricanSpringInventory.Data;
 using AfricanSpringInventory.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -43,14 +44,29 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddRazorPages();
 
-// Read-only product feed consumed by the public marketing site (different origin).
-// GET-only, no credentials, so allowing any origin is safe.
+// Public API consumed by the marketing site (different origin): the product feed
+// (GET) and order submissions (POST). No credentials, so any origin is safe.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PublicSite", p => p
         .AllowAnyOrigin()
         .AllowAnyHeader()
-        .WithMethods("GET"));
+        .WithMethods("GET", "POST"));
+});
+
+// Throttle public order submissions to 5 per minute per client IP to blunt spam.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("orders", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromMinutes(1),
+                PermitLimit = 5,
+                QueueLimit = 0
+            }));
 });
 
 var app = builder.Build();
@@ -78,6 +94,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseCors("PublicSite");
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -106,6 +123,42 @@ app.MapGet("/api/products", async (AppDbContext db, HttpContext http) =>
 // Lightweight liveness endpoint for uptime pings (keeps the free instance warm).
 app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
 
+// Public order intake from the marketing site. Anonymous + CORS + rate limited,
+// with a honeypot field to catch bots.
+app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db) =>
+{
+    // Bots fill hidden fields a human never sees. Pretend success so we don't tip them off.
+    if (!string.IsNullOrWhiteSpace(dto.Website))
+        return Results.Ok(new { ok = true });
+
+    var name = dto.Name?.Trim() ?? "";
+    var phone = dto.Phone?.Trim() ?? "";
+    if (name.Length == 0 || phone.Length == 0)
+        return Results.BadRequest(new { error = "Name and phone are required." });
+
+    static string Cap(string s, int max) => s.Length > max ? s[..max] : s;
+
+    var product = (dto.Product ?? "").Trim();
+    // Match the order to a catalog product by name when we can.
+    int? productId = product.Length == 0 ? null
+        : await db.Products.Where(p => p.Name == product).Select(p => (int?)p.Id).FirstOrDefaultAsync();
+
+    db.Orders.Add(new Order
+    {
+        CustomerName = Cap(name, 80),
+        Phone = Cap(phone, 40),
+        ProductName = Cap(product, 120),
+        ProductId = productId,
+        Details = string.IsNullOrWhiteSpace(dto.Details) ? null : Cap(dto.Details.Trim(), 1000),
+        Source = "website"
+    });
+    await db.SaveChangesAsync();
+    return Results.Ok(new { ok = true });
+})
+    .AllowAnonymous()
+    .RequireCors("PublicSite")
+    .RequireRateLimiting("orders");
+
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
 {
@@ -115,3 +168,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+// Shape of the JSON body posted by the marketing site's order form.
+// `Website` is the honeypot — real users leave it blank.
+record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website);

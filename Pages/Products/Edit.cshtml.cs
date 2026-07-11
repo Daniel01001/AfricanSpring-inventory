@@ -30,6 +30,7 @@ public class EditModel : PageModel
         p.Name = Product.Name;
         p.UnitType = Product.UnitType;
         p.UnitPrice = Product.UnitPrice;
+        p.ReorderThreshold = Product.ReorderThreshold;
         p.IsActive = Product.IsActive;
 
         await _db.SaveChangesAsync();

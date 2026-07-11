@@ -42,3 +42,11 @@ public enum StockMovementType
     Delivery,
     Adjustment
 }
+
+public enum OrderStatus
+{
+    New,
+    Contacted,
+    Fulfilled,
+    Cancelled
+}

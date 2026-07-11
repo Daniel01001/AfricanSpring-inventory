@@ -9,6 +9,14 @@
 <p class="page-sub">Signed in as @User.Identity!.Name</p>
 
 <div class="list">
+    <a class="list-row" asp-page="/Orders/Index">
+        <span class="avatar"><svg class="icon"><use href="#i-order" /></svg></span>
+        <span class="row-main">
+            <span class="primary">Orders</span><br />
+            <span class="secondary">Requests placed from the website</span>
+        </span>
+        <svg class="icon chev"><use href="#i-chevron" /></svg>
+    </a>
     <a class="list-row" asp-page="/Activity">
         <span class="avatar"><svg class="icon"><use href="#i-activity" /></svg></span>
         <span class="row-main">

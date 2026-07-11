@@ -47,7 +47,32 @@
         <div class="kpi-value">@Model.StockUnits.ToString("0.##")</div>
         <div class="kpi-sub">@Model.ProductCount products</div>
     </div>
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">New orders</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-order" /></svg></span>
+        </div>
+        <div class="kpi-value">@Model.NewOrders</div>
+        <div class="kpi-sub"><a class="view-all" asp-page="/Orders/Index">From the website →</a></div>
+    </div>
 </div>
+
+@if (Model.LowStock.Count > 0)
+{
+    <div class="section-label">Low stock</div>
+    <div class="list">
+        @foreach (var s in Model.LowStock)
+        {
+            <a class="list-row" asp-page="/Stock/Index">
+                <span class="row-main">
+                    <span class="primary">@s.Name</span><br />
+                    <span class="secondary">@s.OnHand.ToString("0.##") on hand · alert at @s.Threshold.ToString("0.##")</span>
+                </span>
+                <span class="badge declined">Low</span>
+            </a>
+        }
+    </div>
+}
 
 <div class="cols" style="margin-top:20px">
     <div class="card">
