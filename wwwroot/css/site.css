@@ -357,6 +357,25 @@ table.data .t-strong { font-weight: 800; font-variant-numeric: tabular-nums; }
 .stat .value.neg { color: var(--danger); }
 .stat .value.pos { color: var(--ok); }
 
+/* Date navigator (friend home) ---------------------------------------- */
+.date-nav { display: flex; align-items: center; gap: 10px; margin: 2px 0 14px; }
+.date-nav form { flex: 1; margin: 0; }
+.dn-arrow {
+  width: var(--tap); height: var(--tap); flex: none;
+  display: inline-grid; place-items: center;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+.dn-arrow.is-disabled { opacity: .35; box-shadow: none; }
+.dn-input {
+  width: 100%; height: var(--tap); text-align: center;
+  font: inherit; font-weight: 700; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 0 12px;
+}
+.dn-input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+
 /* Pipeline list -------------------------------------------------------- */
 .pipe-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); }
 .pipe-row:last-child { border-bottom: none; }

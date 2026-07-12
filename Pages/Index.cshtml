@@ -3,10 +3,12 @@
 @{
     ViewData["Title"] = "Home";
     ViewData["Tab"] = "home";
+    var isToday = Model.SelectedDate == Model.Today;
+    var dateLabel = isToday ? "Today" : Model.SelectedDate.ToString("ddd, dd MMM yyyy");
 }
 
 <h1 class="page-title">Hi @Model.FirstName</h1>
-<p class="page-sub">What happened today?</p>
+<p class="page-sub">Log deliveries, payments and stock.</p>
 
 <a class="cta" asp-page="/Deliveries/Create">
     <span class="cta-icon"><svg class="icon"><use href="#i-truck" /></svg></span>
@@ -34,14 +36,60 @@
     </a>
 </div>
 
-<div class="section-label">Today</div>
+<div class="section-label">Deliveries</div>
+
+<div class="date-nav">
+    <a class="dn-arrow" asp-route-Date="@Model.SelectedDate.AddDays(-1).ToString("yyyy-MM-dd")" aria-label="Previous day">
+        <svg class="icon"><use href="#i-back" /></svg>
+    </a>
+    <form method="get">
+        <input class="dn-input" type="date" name="Date"
+               value="@Model.SelectedDate.ToString("yyyy-MM-dd")"
+               max="@Model.Today.ToString("yyyy-MM-dd")"
+               onchange="this.form.submit()" aria-label="Pick a date" />
+    </form>
+    @if (Model.SelectedDate < Model.Today)
+    {
+        <a class="dn-arrow" asp-route-Date="@Model.SelectedDate.AddDays(1).ToString("yyyy-MM-dd")" aria-label="Next day">
+            <svg class="icon"><use href="#i-chevron" /></svg>
+        </a>
+    }
+    else
+    {
+        <span class="dn-arrow is-disabled" aria-hidden="true"><svg class="icon"><use href="#i-chevron" /></svg></span>
+    }
+</div>
+
 <div class="stat-grid">
     <div class="stat">
-        <div class="value">@Model.DeliveriesToday</div>
-        <div class="label">Deliveries logged</div>
+        <div class="value">@Model.DeliveriesCount</div>
+        <div class="label">Deliveries</div>
     </div>
     <div class="stat">
-        <div class="value">R @Model.ValueToday.ToString("N2")</div>
+        <div class="value">R @Model.ValueDelivered.ToString("N2")</div>
         <div class="label">Value delivered</div>
     </div>
 </div>
+
+@if (Model.Deliveries.Count == 0)
+{
+    <div class="empty">No deliveries logged @(isToday ? "today" : "on " + dateLabel).</div>
+}
+else
+{
+    <div class="list" style="margin-top:12px">
+        @foreach (var d in Model.Deliveries)
+        {
+            <a class="list-row" asp-page="/Stores/Details" asp-route-id="@d.StoreId">
+                <span class="row-main">
+                    <span class="primary">@d.Store</span><br />
+                    <span class="secondary">@d.Items · by @d.By</span>
+                </span>
+                <span class="row-right">
+                    <span class="amount">R @d.Total.ToString("N2")</span>
+                    <svg class="icon chev"><use href="#i-chevron" /></svg>
+                </span>
+            </a>
+        }
+    </div>
+}
