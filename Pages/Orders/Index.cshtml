@@ -34,7 +34,7 @@ else
             <div class="list-row" style="flex-wrap:wrap">
                 <span class="avatar @(o.Status == OrderStatus.New ? "" : "ghost")">@Initials(o.CustomerName)</span>
                 <span class="row-main">
-                    <span class="primary">@o.CustomerName <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span><br />
+                    <span class="primary">@o.CustomerName <span class="badge">AS-@o.Id.ToString("D4")</span> <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span><br />
                     <span class="secondary">
                         @if (!string.IsNullOrWhiteSpace(o.ProductName))
                         {

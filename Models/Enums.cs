@@ -46,7 +46,8 @@ public enum StockMovementType
 public enum OrderStatus
 {
     New,
-    Contacted,
-    Fulfilled,
+    Confirmed,
+    OutForDelivery,
+    Delivered,
     Cancelled
 }
