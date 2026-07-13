@@ -121,12 +121,24 @@ app.MapGet("/api/products", async (AppDbContext db, HttpContext http) =>
             id = p.Id,
             name = p.Name,
             unitType = p.UnitType,
-            unitPrice = p.UnitPrice
+            unitPrice = p.UnitPrice,
+            hasImage = p.ImageData != null
         })
         .ToListAsync();
 })
     .AllowAnonymous()
     .RequireCors("PublicSite");
+
+// Product photo (resized JPEG stored in the DB).
+app.MapGet("/api/products/{id:int}/image", async (int id, AppDbContext db, HttpContext http) =>
+{
+    var p = await db.Products.Where(x => x.Id == id)
+        .Select(x => new { x.ImageData, x.ImageContentType }).FirstOrDefaultAsync();
+    if (p?.ImageData is null) return Results.NotFound();
+    http.Response.Headers.CacheControl = "public, max-age=86400";
+    return Results.File(p.ImageData, p.ImageContentType ?? "image/jpeg");
+})
+    .AllowAnonymous().RequireCors("PublicSite");
 
 // Lightweight liveness endpoint for uptime pings (keeps the free instance warm).
 app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();

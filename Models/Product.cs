@@ -21,6 +21,11 @@ public class Product
 
     public bool IsActive { get; set; } = true;
 
+    // Optional product photo, resized + stored in the DB (persists on Render).
+    public byte[]? ImageData { get; set; }
+    [MaxLength(40)]
+    public string? ImageContentType { get; set; }
+
     public ICollection<DeliveryItem> DeliveryItems { get; set; } = new List<DeliveryItem>();
     public ICollection<StockMovement> StockMovements { get; set; } = new List<StockMovement>();
 }

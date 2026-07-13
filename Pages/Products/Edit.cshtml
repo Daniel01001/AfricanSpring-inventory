@@ -7,13 +7,24 @@
 <a class="back" asp-page="/Products/Index"><svg class="icon"><use href="#i-back" /></svg> Products</a>
 <h1 class="page-title">Edit product</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <input type="hidden" asp-for="Product.Id" />
 
     <div class="field">
         <label asp-for="Product.Name">Name</label>
         <input asp-for="Product.Name" />
         <span asp-validation-for="Product.Name" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Image">Photo</label>
+        @if (Model.HasImage)
+        {
+            <img src="/api/products/@Model.Product.Id/image" alt="@Model.Product.Name"
+                 style="display:block;width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--border);margin-bottom:8px" />
+        }
+        <input asp-for="Image" type="file" accept="image/*" />
+        <span class="field-hint" style="color:var(--muted);font-size:12.5px">Upload to @(Model.HasImage ? "replace the current photo" : "add a photo").</span>
     </div>
 
     <div class="field-row">
