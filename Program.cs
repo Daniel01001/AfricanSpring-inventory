@@ -336,6 +336,30 @@ app.MapGet("/api/portal/orders", async (AppDbContext db, PortalToken tokens, Htt
 })
     .AllowAnonymous().RequireCors("PublicSite");
 
+// A logged-in customer adds another of their businesses (Pending, owns fridge).
+app.MapPost("/api/portal/stores", async (PortalStoreDto dto, AppDbContext db, PortalToken tokens, HttpContext http) =>
+{
+    var id = PortalAccountId(http, tokens);
+    if (id is null) return Results.Unauthorized();
+    var account = await db.CustomerAccounts.FindAsync(id.Value);
+    if (account is null || !account.IsActive) return Results.Unauthorized();
+    var name = (dto.Name ?? "").Trim();
+    if (name.Length == 0) return Results.BadRequest(new { error = "Business name is required." });
+
+    db.Stores.Add(new Store
+    {
+        Name = Trunc(name, 120),
+        Phone = account.Phone,
+        Location = string.IsNullOrWhiteSpace(dto.Address) ? null : Trunc(dto.Address.Trim(), 160),
+        Status = StoreStatus.Prospect,
+        FridgeArrangement = FridgeArrangement.StoreOwnsFridge,
+        CustomerAccountId = account.Id
+    });
+    await db.SaveChangesAsync();
+    return Results.Ok(new { ok = true });
+})
+    .AllowAnonymous().RequireCors("PublicSite");
+
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
 {
@@ -355,6 +379,7 @@ record OrderDto(string? Name, string? Phone, string? Product, string? Details, s
 record PortalRegisterDto(string? Name, string? Phone, string? Password, string? Address);
 record PortalLoginDto(string? Phone, string? Password);
 record PortalChangePwDto(string? NewPassword);
+record PortalStoreDto(string? Name, string? Address);
 
 // Push subscription payloads from the browser.
 record PushSubDto(string? Endpoint, string? P256dh, string? Auth);

@@ -51,6 +51,17 @@
 </div>
 
 <div style="margin-top:14px">
+    @if (Model.PendingApprovals > 0)
+    {
+        <a class="db-banner accent" asp-page="/Approvals/Index">
+            <span class="b-ic"><svg class="icon"><use href="#i-store" /></svg></span>
+            <span>
+                <span class="b-t">@Model.PendingApprovals online sign-up@(Model.PendingApprovals == 1 ? "" : "s") to review</span>
+                <span class="b-s">Approve or decline new businesses</span>
+            </span>
+            <svg class="icon b-chev"><use href="#i-chevron" /></svg>
+        </a>
+    }
     @if (Model.NewOrders > 0)
     {
         <a class="db-banner accent" asp-page="/Orders/Index">

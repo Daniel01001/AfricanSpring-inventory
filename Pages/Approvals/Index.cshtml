@@ -1,0 +1,38 @@
+@page
+@model AfricanSpringInventory.Pages.Approvals.IndexModel
+@{
+    ViewData["Title"] = "Approvals";
+    ViewData["Tab"] = "approvals";
+    ViewData["Sub"] = "New online sign-ups";
+}
+
+<h1 class="page-title">Approvals</h1>
+<p class="page-sub">Businesses that registered online, waiting to be approved.</p>
+
+@if (Model.Pending.Count == 0)
+{
+    <div class="empty" style="margin-top:18px">Nothing to review. New online sign-ups show up here.</div>
+}
+else
+{
+    @foreach (var p in Model.Pending)
+    {
+        <div class="card" style="margin-bottom:12px">
+            <a class="row-main" asp-page="/Stores/Details" asp-route-id="@p.Id" style="display:block;color:inherit">
+                <span class="primary">@p.Name</span><br />
+                <span class="secondary">
+                    @p.Customer · <a href="tel:@p.Phone">@p.Phone</a>@(string.IsNullOrWhiteSpace(p.Location) ? "" : " · " + p.Location)<br />
+                    Registered @p.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")
+                </span>
+            </a>
+            <div style="display:flex;gap:10px;margin-top:14px">
+                <form method="post" asp-page-handler="Approve" asp-route-id="@p.Id" style="margin:0;flex:1">
+                    <button type="submit" class="btn btn-primary btn-block">Approve</button>
+                </form>
+                <form method="post" asp-page-handler="Decline" asp-route-id="@p.Id" style="margin:0;flex:1">
+                    <button type="submit" class="btn btn-block">Decline</button>
+                </form>
+            </div>
+        </div>
+    }
+}

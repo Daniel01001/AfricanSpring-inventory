@@ -22,6 +22,7 @@ public class DashboardModel : PageModel
     public decimal StockUnits { get; set; }
     public int ProductCount { get; set; }
     public int NewOrders { get; set; }
+    public int PendingApprovals { get; set; }
     public string SparkPoints { get; set; } = "";
 
     public record NamedAmount(string Name, decimal Amount);
@@ -89,6 +90,7 @@ public class DashboardModel : PageModel
             .ToList();
 
         NewOrders = await _db.Orders.CountAsync(o => o.Status == OrderStatus.New);
+        PendingApprovals = await _db.Stores.CountAsync(s => s.Status == StoreStatus.Prospect && s.CustomerAccount != null && s.CustomerAccount.Source == "website");
 
         var recent = await _db.Deliveries
             .OrderByDescending(d => d.DeliveryDate).ThenByDescending(d => d.Id)

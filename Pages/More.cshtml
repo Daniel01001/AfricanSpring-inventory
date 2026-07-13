@@ -1,9 +1,13 @@
 @page
+@inject AfricanSpringInventory.Data.AppDbContext Db
 @{
     ViewData["Title"] = "More";
     ViewData["Tab"] = "more";
     ViewData["Sub"] = "Signed in as " + User.Identity!.Name;
     var isOwner = User.IsInRole("Owner");
+    var pendingApprovals = isOwner
+        ? Db.Stores.Count(s => s.Status == StoreStatus.Prospect && s.CustomerAccount != null && s.CustomerAccount.Source == "website")
+        : 0;
 }
 
 <h1 class="page-title">More</h1>
@@ -44,6 +48,14 @@
     </a>
     @if (isOwner)
     {
+        <a class="list-row" asp-page="/Approvals/Index">
+            <span class="avatar"><svg class="icon"><use href="#i-store" /></svg></span>
+            <span class="row-main">
+                <span class="primary">Approvals @if (pendingApprovals > 0) { <span class="badge prospect">@pendingApprovals</span> }</span><br />
+                <span class="secondary">New online sign-ups to review</span>
+            </span>
+            <svg class="icon chev"><use href="#i-chevron" /></svg>
+        </a>
         <a class="list-row" asp-page="/Customers/Index">
             <span class="avatar"><svg class="icon"><use href="#i-users" /></svg></span>
             <span class="row-main">
