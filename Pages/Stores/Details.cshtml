@@ -47,7 +47,7 @@
             <div><div class="secondary">Phone</div><div style="font-weight:700" class="num">@Model.GrantedPhone</div></div>
             <div><div class="secondary">Password</div><div style="font-weight:800;letter-spacing:.06em">@Model.GrantedPassword</div></div>
         </div>
-        <a class="btn btn-primary btn-block" href="https://wa.me/@((Model.GrantedPhone ?? "").TrimStart('+'))?text=@(Uri.EscapeDataString($"Here's your AfricanSpring online-ordering login for orders.africanspring.co.za\nPhone: {Model.GrantedPhone}\nPassword: {Model.GrantedPassword}\nPlease change your password when you first log in."))" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <a class="btn btn-primary btn-block" href="https://wa.me/@((Model.GrantedPhone ?? "").TrimStart('+'))?text=@(Uri.EscapeDataString($"Here's your AfricanSpring online-ordering login for order.africanspring.co.za\nPhone: {Model.GrantedPhone}\nPassword: {Model.GrantedPassword}\nPlease change your password when you first log in."))" target="_blank" rel="noopener">Send on WhatsApp</a>
     </div>
 }
 @if (Model.Account is not null)
