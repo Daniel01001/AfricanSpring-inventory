@@ -1,0 +1,45 @@
+@page
+@model AfricanSpringInventory.Pages.Customers.IndexModel
+@{
+    ViewData["Title"] = "Customers";
+    ViewData["Tab"] = "customers";
+    ViewData["Sub"] = "Online ordering accounts";
+}
+
+<h1 class="page-title">Customers</h1>
+<p class="page-sub">People with online-ordering logins. Grant access from a store's page.</p>
+
+@if (Model.Accounts.Count == 0)
+{
+    <div class="empty" style="margin-top:18px">No online accounts yet.</div>
+}
+else
+{
+    <div class="list" style="margin-top:6px">
+        @foreach (var a in Model.Accounts)
+        {
+            <div class="list-row">
+                <span class="avatar @(a.IsActive ? "" : "ghost")"><svg class="icon sm"><use href="#i-users" /></svg></span>
+                <span class="row-main">
+                    <span class="primary">
+                        @a.Name
+                        @if (!a.IsActive)
+                        {
+                            <span class="badge">Disabled</span>
+                        }
+                        @if (a.MustChange)
+                        {
+                            <span class="badge prospect">Temp password</span>
+                        }
+                    </span><br />
+                    <span class="secondary">
+                        @a.Phone · @a.Stores store@(a.Stores == 1 ? "" : "s")@(a.LastLogin is not null ? " · last in " + a.LastLogin.Value.ToLocalTime().ToString("dd MMM") : " · never logged in")
+                    </span>
+                </span>
+                <form method="post" asp-page-handler="Toggle" asp-route-id="@a.Id" style="margin:0">
+                    <button type="submit" class="btn btn-sm">@(a.IsActive ? "Disable" : "Enable")</button>
+                </form>
+            </div>
+        }
+    </div>
+}

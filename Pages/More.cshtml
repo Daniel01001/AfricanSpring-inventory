@@ -44,6 +44,14 @@
     </a>
     @if (isOwner)
     {
+        <a class="list-row" asp-page="/Customers/Index">
+            <span class="avatar"><svg class="icon"><use href="#i-users" /></svg></span>
+            <span class="row-main">
+                <span class="primary">Customers</span><br />
+                <span class="secondary">Online ordering logins</span>
+            </span>
+            <svg class="icon chev"><use href="#i-chevron" /></svg>
+        </a>
         <a class="list-row" asp-page="/Users/Index">
             <span class="avatar"><svg class="icon"><use href="#i-users" /></svg></span>
             <span class="row-main">

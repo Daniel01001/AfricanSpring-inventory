@@ -33,6 +33,52 @@
     <a class="btn" asp-page="/Payments/Create" asp-route-storeId="@Model.Store.Id">Record payment</a>
 </div>
 
+<div class="section-label">Online ordering access</div>
+@if (Model.AccessError is not null)
+{
+    <p class="field-error">@Model.AccessError</p>
+}
+@if (Model.GrantedPassword is not null)
+{
+    <div class="card" style="border:1px solid var(--accent);background:var(--accent-soft)">
+        <div style="font-weight:800;margin-bottom:2px">Temporary password created</div>
+        <div class="secondary">Send it now — it won't be shown again.</div>
+        <div style="display:flex;gap:24px;margin:12px 0">
+            <div><div class="secondary">Phone</div><div style="font-weight:700" class="num">@Model.GrantedPhone</div></div>
+            <div><div class="secondary">Password</div><div style="font-weight:800;letter-spacing:.06em">@Model.GrantedPassword</div></div>
+        </div>
+        <a class="btn btn-primary btn-block" href="https://wa.me/@((Model.GrantedPhone ?? "").TrimStart('+'))?text=@(Uri.EscapeDataString($"Here's your AfricanSpring online-ordering login for orders.africanspring.co.za\nPhone: {Model.GrantedPhone}\nPassword: {Model.GrantedPassword}\nPlease change your password when you first log in."))" target="_blank" rel="noopener">Send on WhatsApp</a>
+    </div>
+}
+@if (Model.Account is not null)
+{
+    <div class="card">
+        <div style="display:flex;align-items:center;gap:10px">
+            <span class="avatar"><svg class="icon"><use href="#i-users" /></svg></span>
+            <div style="flex:1">
+                <div style="font-weight:700">@Model.Account.Name</div>
+                <div class="secondary">@Model.Account.Phone · @(Model.Account.IsActive ? "active" : "disabled")@(Model.Account.MustChangePassword ? " · temp password" : "")</div>
+            </div>
+        </div>
+        <form method="post" asp-page-handler="ResetPassword" asp-route-id="@Model.Store.Id" style="margin-top:12px">
+            <button type="submit" class="btn btn-block">Reset password</button>
+        </form>
+    </div>
+}
+else
+{
+    <div class="card">
+        <p class="secondary" style="margin:0 0 12px">
+            Let this store order online. We'll create a login for
+            @(string.IsNullOrWhiteSpace(Model.Store.Phone) ? "their phone" : Model.Store.Phone)
+            and give you a password to send on WhatsApp.
+        </p>
+        <form method="post" asp-page-handler="GrantAccess" asp-route-id="@Model.Store.Id">
+            <button type="submit" class="btn btn-primary btn-block">Give online access</button>
+        </form>
+    </div>
+}
+
 @if (Model.Store.ContactPerson is not null || Model.Store.Phone is not null || Model.Store.Location is not null)
 {
     <div class="section-label">Contact</div>
