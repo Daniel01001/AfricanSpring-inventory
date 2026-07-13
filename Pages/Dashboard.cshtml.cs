@@ -22,6 +22,7 @@ public class DashboardModel : PageModel
     public decimal StockUnits { get; set; }
     public int ProductCount { get; set; }
     public int NewOrders { get; set; }
+    public string SparkPoints { get; set; } = "";
 
     public record NamedAmount(string Name, decimal Amount);
     public List<NamedAmount> Outstanding { get; set; } = new();
@@ -45,6 +46,25 @@ public class DashboardModel : PageModel
 
         TotalRevenue = await _db.DeliveryItems.SumAsync(i => (decimal?)i.LineTotal) ?? 0m;
         TotalDeliveryCount = await _db.Deliveries.CountAsync();
+
+        // 7-day daily revenue for the sparkline on the revenue card.
+        var since = today.AddDays(-6);
+        var daily = await _db.DeliveryItems
+            .Where(i => i.Delivery!.DeliveryDate >= since)
+            .GroupBy(i => i.Delivery!.DeliveryDate)
+            .Select(g => new { Date = g.Key, Total = g.Sum(x => x.LineTotal) })
+            .ToListAsync();
+        var dmap = daily.ToDictionary(x => x.Date, x => x.Total);
+        var trend = Enumerable.Range(0, 7)
+            .Select(i => dmap.TryGetValue(since.AddDays(i), out var v) ? v : 0m).ToList();
+        var max = trend.Max();
+        if (max <= 0) max = 1m;
+        SparkPoints = string.Join(" ", trend.Select((v, i) =>
+        {
+            var x = i / 6.0 * 100.0;
+            var y = 28.0 - (double)(v / max) * 24.0;
+            return $"{x:0.#},{y:0.#}";
+        }));
 
         var names = await _db.Stores.ToDictionaryAsync(s => s.Id, s => s.Name);
 

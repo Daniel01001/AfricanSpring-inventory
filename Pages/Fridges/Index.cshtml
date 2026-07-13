@@ -3,13 +3,12 @@
 @{
     ViewData["Title"] = "Fridges";
     ViewData["Tab"] = "fridges";
+    ViewData["Sub"] = "Where your fridges are";
 }
 
 <div class="page-head">
     <h1 class="page-title">Fridges</h1>
-    <a class="btn btn-primary btn-sm" asp-page="/Fridges/Create">
-        <svg class="icon"><use href="#i-plus" /></svg> Add
-    </a>
+    <a class="add-link" asp-page="/Fridges/Create"><svg class="icon"><use href="#i-plus" /></svg> Add</a>
 </div>
 <p class="page-sub">Fridges you own and where they're placed.</p>
 

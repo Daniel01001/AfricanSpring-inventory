@@ -8,12 +8,10 @@
 }
 
 <div class="page-head">
-    <div>
-        <h1 class="page-title">Inventory</h1>
-        <p class="page-sub" style="margin:0">Add stock after production, or correct a count.</p>
-    </div>
-    <a class="btn btn-sm" asp-page="/Stock/Create">Detailed entry</a>
+    <h1 class="page-title">Stock</h1>
+    <a class="add-link" asp-page="/Stock/Create"><svg class="icon"><use href="#i-plus" /></svg> Made ice</a>
 </div>
+<p class="page-sub">On hand across your products.</p>
 
 @if (Model.Rows.Count == 0)
 {
@@ -21,35 +19,33 @@
 }
 else
 {
-    <div class="inv-grid" style="margin-top:18px">
+    <div class="list" style="margin-top:6px">
         @foreach (var r in Model.Rows)
         {
-            <div class="inv-card">
-                <div class="inv-head">
-                    <span class="avatar ghost"><svg class="icon"><use href="#i-snowflake" /></svg></span>
-                    <span class="n">@r.Name</span>
-                    @if (r.Low)
-                    {
-                        <span class="badge intalks">Low</span>
-                    }
-                </div>
-                <div class="inv-value">@r.OnHand.ToString("0.##")</div>
-                <div class="inv-meta">@r.Unit · R @r.Price.ToString("N2") each</div>
-
-                <form method="post" class="inv-actions">
-                    <input type="hidden" name="productId" value="@r.Id" />
-                    <input type="number" name="qty" min="0" step="0.01" inputmode="decimal" placeholder="0" aria-label="Quantity for @r.Name" />
-                    <button class="btn btn-sm btn-primary" type="submit" name="dir" value="add">
-                        <svg class="icon"><use href="#i-plus" /></svg> Add
-                    </button>
-                    <button class="btn btn-sm" type="submit" name="dir" value="remove">Remove</button>
-                </form>
-
-                @if (r.LastUpdated is not null)
-                {
-                    <div class="inv-updated">Last updated @r.LastUpdated.Value.ToString("dd MMM yyyy")</div>
-                }
+            <div class="list-row">
+                <span class="avatar ghost"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+                <span class="row-main">
+                    <span class="primary">
+                        @r.Name
+                        @if (r.Low)
+                        {
+                            <span class="badge intalks">Low</span>
+                        }
+                    </span><br />
+                    <span class="secondary">
+                        R @r.Price.ToString("N2") / @r.Unit@if (r.LastUpdated is not null)
+                        {<text> · updated @r.LastUpdated.Value.ToString("dd MMM")</text>}
+                    </span>
+                </span>
+                <span class="stock-onhand">
+                    <span class="n">@r.OnHand.ToString("0.##")</span><br />
+                    <span class="u">@r.Unit</span>
+                </span>
             </div>
         }
     </div>
+
+    <a class="btn btn-block" asp-page="/Stock/Create" style="margin-top:14px">
+        <svg class="icon"><use href="#i-plus" /></svg> Record production
+    </a>
 }

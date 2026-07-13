@@ -300,9 +300,21 @@ a.list-row:hover { background: var(--accent-softer); }
   display: flex; align-items: center; justify-content: center; flex: none;
 }
 .kpi-chip .icon { width: 18px; height: 18px; }
-.kpi-value { font-size: 29px; font-weight: 800; letter-spacing: -0.03em; margin-top: 14px; font-variant-numeric: tabular-nums; }
+.kpi-value { font-size: 27px; font-weight: 800; letter-spacing: -0.03em; margin-top: 10px; font-variant-numeric: tabular-nums; }
 .kpi-value.neg { color: var(--danger); }
 .kpi-sub { color: var(--faint); font-size: 12.5px; margin-top: 3px; font-weight: 500; }
+.spark { width: 100%; height: 26px; margin-top: 8px; overflow: visible; display: block; }
+.spark polyline { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Small inline "+ Add" action for list headers (matches demo) */
+.add-link { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; padding: 4px 2px; color: var(--accent); font-weight: 700; font-size: 13.5px; font-family: inherit; cursor: pointer; margin-left: auto; }
+.add-link .icon { width: 16px; height: 16px; }
+.add-link:hover { color: var(--accent-strong); }
+
+/* Stock rows (demo style) */
+.stock-onhand { text-align: right; }
+.stock-onhand .n { font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
+.stock-onhand .u { color: var(--faint); font-size: 12px; }
 
 /* Data table ----------------------------------------------------------- */
 .table-card {

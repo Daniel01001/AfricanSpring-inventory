@@ -3,13 +3,12 @@
 @{
     ViewData["Title"] = "People";
     ViewData["Tab"] = "users";
+    ViewData["Sub"] = "Who can sign in";
 }
 
 <div class="page-head">
     <h1 class="page-title">People</h1>
-    <a class="btn btn-primary btn-sm" asp-page="/Users/Create">
-        <svg class="icon"><use href="#i-plus" /></svg> Add person
-    </a>
+    <a class="add-link" asp-page="/Users/Create"><svg class="icon"><use href="#i-plus" /></svg> Add</a>
 </div>
 <p class="page-sub">Who can sign in, and what they can do.</p>
 

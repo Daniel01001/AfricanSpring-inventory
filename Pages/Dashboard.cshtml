@@ -21,7 +21,8 @@
             <span class="kpi-chip"><svg class="icon"><use href="#i-trend" /></svg></span>
         </div>
         <div class="kpi-value">R @Model.TotalRevenue.ToString("N0")</div>
-        <div class="kpi-sub">all time</div>
+        <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="@Model.SparkPoints" /></svg>
+        <div class="kpi-sub">all time · last 7 days</div>
     </div>
     <div class="kpi">
         <div class="kpi-top">

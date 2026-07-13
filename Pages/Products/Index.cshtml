@@ -3,11 +3,12 @@
 @{
     ViewData["Title"] = "Products";
     ViewData["Tab"] = "products";
+    ViewData["Sub"] = "Prices & low-stock alerts";
 }
 
 <div class="page-head">
     <h1 class="page-title">Products</h1>
-    <a class="btn btn-primary btn-sm" asp-page="/Products/Create">
+    <a class="add-link" asp-page="/Products/Create">
         <svg class="icon"><use href="#i-plus" /></svg> Add
     </a>
 </div>
