@@ -1,3 +1,4 @@
+@inject AfricanSpringInventory.Data.AppDbContext Db
 @{
     var signedIn = User.Identity?.IsAuthenticated == true;
     var tab = ViewData["Tab"] as string;
@@ -5,6 +6,9 @@
     var wide = ViewData["Wide"] as bool? == true;
     var moreTabs = new[] { "products", "fridges", "users", "activity", "more" };
     var onMore = tab is not null && moreTabs.Contains(tab);
+    var newOrders = signedIn ? Db.Orders.Count(o => o.Status == OrderStatus.New) : 0;
+    var appSub = ViewData["Sub"] as string;
+    var hasFlowFoot = ViewData["FlowFoot"] as bool? == true;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -20,7 +24,7 @@
     <link rel="manifest" href="~/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="~/apple-touch-icon.png" />
 </head>
-<body class="shell @(signedIn ? "authed" : "unauth") @(tab is null ? "no-tabbar" : "")">
+<body class="shell @(signedIn ? "authed" : "unauth") @(tab is null ? "no-tabbar" : "") @(hasFlowFoot ? "has-flowfoot" : "")">
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
         <defs>
             <symbol id="i-snowflake" viewBox="0 0 24 24"><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></symbol>
@@ -41,6 +45,7 @@
             <symbol id="i-trend" viewBox="0 0 24 24"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
             <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M18 12a1 1 0 0 0 0 2h3v-2z"/></symbol>
             <symbol id="i-order" viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v1h1a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1V3a1 1 0 0 1 1-1z"/><path d="M9 4h6"/><path d="M9 12h6"/><path d="M9 16h4"/></symbol>
+            <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
         </defs>
     </svg>
 
@@ -100,11 +105,20 @@
         </aside>
 
         <header class="app-header">
-            <a class="brand" asp-page="@(isOwner ? "/Dashboard" : "/Index")">
-                <span class="brand-mark"><svg class="icon"><use href="#i-snowflake" /></svg></span>
-                <span class="b-name">AfricanSpring Ice</span>
+            <div>
+                <h1 class="ab-title">@(ViewData["Title"] ?? "AfricanSpring")</h1>
+                @if (appSub is not null)
+                {
+                    <div class="ab-sub">@appSub</div>
+                }
+            </div>
+            <a class="iconbtn" asp-page="/Orders/Index" aria-label="Orders">
+                <svg class="icon"><use href="#i-bell" /></svg>
+                @if (newOrders > 0)
+                {
+                    <span class="dot"></span>
+                }
             </a>
-            <span class="who">@User.Identity!.Name</span>
         </header>
     }
 
@@ -145,6 +159,10 @@
             </a>
             <a class="tab @(tab == "orders" ? "on" : "")" asp-page="/Orders/Index">
                 <svg class="icon"><use href="#i-order" /></svg><span>Orders</span>
+                @if (newOrders > 0)
+                {
+                    <span class="tab-badge">@newOrders</span>
+                }
             </a>
             <a class="tab @(onMore ? "on" : "")" asp-page="/More">
                 <svg class="icon"><use href="#i-more" /></svg><span>More</span>

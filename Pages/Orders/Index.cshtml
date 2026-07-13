@@ -3,7 +3,14 @@
 @{
     ViewData["Title"] = "Orders";
     ViewData["Tab"] = "orders";
+    ViewData["Sub"] = "From the website";
     var statuses = Enum.GetValues<OrderStatus>();
+
+    static string Initials(string n)
+    {
+        var parts = n.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return string.Concat(parts.Take(2).Select(w => char.ToUpper(w[0])));
+    }
 }
 
 <div class="page-head">
@@ -15,7 +22,7 @@
 </div>
 <p class="page-sub">Requests placed from the website. WhatsApp is still the main chat.</p>
 
-<button type="button" id="enablePush" class="btn btn-sm" style="margin-bottom:16px">Turn on order alerts</button>
+<button type="button" id="enablePush" class="btn btn-sm" style="margin-bottom:14px">Turn on order alerts</button>
 
 @if (Model.Orders.Count == 0)
 {
@@ -23,37 +30,39 @@
 }
 else
 {
-    @foreach (var o in Model.Orders)
-    {
-        <div class="card" style="margin-bottom:12px">
-            <div class="page-head" style="margin-bottom:6px">
-                <span class="primary">@o.CustomerName <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span>
-                <span class="secondary">@o.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")</span>
-            </div>
-            <div class="secondary">
-                @if (!string.IsNullOrWhiteSpace(o.ProductName))
-                {
-                    <strong>@o.ProductName</strong> <span>·</span>
-                }
-                <a href="tel:@o.Phone">@o.Phone</a>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(o.Details))
-            {
-                <p class="secondary" style="margin:8px 0 0;white-space:pre-wrap">@o.Details</p>
-            }
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
-                @foreach (var s in statuses)
-                {
-                    @if (s != o.Status)
+    <div class="list">
+        @foreach (var o in Model.Orders)
+        {
+            <div class="list-row" style="flex-wrap:wrap">
+                <span class="avatar @(o.Status == OrderStatus.New ? "" : "ghost")">@Initials(o.CustomerName)</span>
+                <span class="row-main">
+                    <span class="primary">@o.CustomerName <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span><br />
+                    <span class="secondary">
+                        @if (!string.IsNullOrWhiteSpace(o.ProductName))
+                        {
+                            <strong>@o.ProductName</strong> <span>·</span>
+                        }
+                        <a href="tel:@o.Phone">@o.Phone</a> · @o.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")
+                    </span>
+                    @if (!string.IsNullOrWhiteSpace(o.Details))
                     {
-                        <form method="post" asp-page-handler="Status" style="margin:0">
-                            <input type="hidden" name="id" value="@o.Id" />
-                            <input type="hidden" name="status" value="@s" />
-                            <button type="submit" class="btn btn-sm">@s.Label()</button>
-                        </form>
+                        <br /><span class="secondary" style="white-space:pre-wrap">@o.Details</span>
                     }
-                }
+                </span>
+                <span class="order-actions">
+                    @foreach (var s in statuses)
+                    {
+                        @if (s != o.Status)
+                        {
+                            <form method="post" asp-page-handler="Status" style="margin:0">
+                                <input type="hidden" name="id" value="@o.Id" />
+                                <input type="hidden" name="status" value="@s" />
+                                <button type="submit" class="btn btn-sm">@s.Label()</button>
+                            </form>
+                        }
+                    }
+                </span>
             </div>
-        </div>
-    }
+        }
+    </div>
 }

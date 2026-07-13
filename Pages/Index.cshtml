@@ -3,20 +3,18 @@
 @{
     ViewData["Title"] = "Home";
     ViewData["Tab"] = "home";
+    ViewData["Sub"] = DateTime.Now.ToString("dddd, d MMMM");
     var isToday = Model.SelectedDate == Model.Today;
     var dateLabel = isToday ? "Today" : Model.SelectedDate.ToString("ddd, dd MMM yyyy");
 }
 
-<h1 class="page-title">Hi @Model.FirstName</h1>
-<p class="page-sub">Log deliveries, payments and stock.</p>
+<div class="greet-card">
+    <div class="g-hi">Hi @Model.FirstName</div>
+    <div class="g-t">Log today's work</div>
+</div>
 
-<a class="cta" asp-page="/Deliveries/Create">
-    <span class="cta-icon"><svg class="icon"><use href="#i-truck" /></svg></span>
-    <span>
-        <span class="cta-title">Log a delivery</span>
-        <span class="cta-sub">Ice dropped at a store — stock updates itself</span>
-    </span>
-    <span class="cta-go"><svg class="icon"><use href="#i-chevron" /></svg></span>
+<a class="btn btn-primary btn-block" asp-page="/Deliveries/Create">
+    <svg class="icon"><use href="#i-truck" /></svg> Log a delivery
 </a>
 
 <div class="action-grid" style="margin-top:12px">

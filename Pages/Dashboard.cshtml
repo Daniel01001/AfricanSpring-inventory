@@ -1,9 +1,10 @@
 @page
 @model AfricanSpringInventory.Pages.DashboardModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Overview";
     ViewData["Tab"] = "dashboard";
     ViewData["Wide"] = true;
+    ViewData["Sub"] = DateTime.Now.ToString("dddd, d MMMM");
 }
 
 <div class="page-head" style="margin-bottom:18px">

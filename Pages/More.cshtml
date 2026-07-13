@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "More";
     ViewData["Tab"] = "more";
+    ViewData["Sub"] = "Signed in as " + User.Identity!.Name;
     var isOwner = User.IsInRole("Owner");
 }
 

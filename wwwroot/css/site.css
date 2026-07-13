@@ -12,7 +12,7 @@
   --ice: #14b8a6;
 
   /* content (light) */
-  --bg: #f5f8fc;
+  --bg: #eef1f4;
   --surface: #ffffff;
   --text: #10161d;
   --muted: #5c6672;
@@ -33,8 +33,8 @@
   --warn: #8a6420;
   --warn-soft: #f7f1e2;
 
-  --radius: 16px;
-  --radius-sm: 11px;
+  --radius: 18px;
+  --radius-sm: 12px;
   --tap: 48px;
 
   --sidebar-w: 240px;
@@ -132,18 +132,30 @@ a { color: var(--accent); text-decoration: none; }
   font-family: inherit;
 }
 
-/* Mobile header ------------------------------------------------------- */
+/* Mobile header (demo appbar: light, page title + bell) ---------------- */
 .app-header {
   position: sticky; top: 0; z-index: 20;
-  background: var(--ink);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px 11px;
 }
-.app-header .brand { display: flex; align-items: center; gap: 10px; }
-.app-header .brand .b-name { color: var(--ink-text); font-weight: 800; font-size: 15px; }
-.app-header .brand .brand-mark { width: 28px; height: 28px; border-radius: 8px; }
-.app-header .brand .brand-mark .icon { width: 16px; height: 16px; }
-.app-header .who { color: var(--ink-muted); font-size: 13px; font-weight: 600; }
+.app-header .ab-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; }
+.app-header .ab-sub { color: var(--muted); font-size: 12.5px; margin-top: 1px; font-weight: 500; }
+.iconbtn {
+  margin-left: auto; width: 40px; height: 40px; flex: none;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  display: grid; place-items: center; cursor: pointer; position: relative;
+  text-decoration: none;
+}
+.iconbtn .dot { position: absolute; top: 8px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 2px solid var(--surface); }
+
+/* Hide in-page titles on mobile — the appbar shows them instead */
+@media (max-width: 899px) {
+  .shell.authed .page-title, .shell.authed .page-sub { display: none; }
+  .page-head > .btn { margin-left: auto; }
+}
 
 /* Top bar (desktop) --------------------------------------------------- */
 .topbar { display: none; }
@@ -161,9 +173,16 @@ a { color: var(--accent); text-decoration: none; }
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; padding: 8px 0 7px;
   color: var(--faint); font-size: 10.5px; font-weight: 700;
+  position: relative;
 }
 .tab .icon { width: 22px; height: 22px; }
 .tab.on { color: var(--accent); }
+.tab .tab-badge {
+  position: absolute; top: 3px; right: 22%;
+  background: var(--danger); color: #fff;
+  font-size: 10px; font-weight: 800; line-height: 1;
+  border-radius: 999px; padding: 3px 6px;
+}
 
 /* Shell --------------------------------------------------------------- */
 .content { min-height: 100vh; }
@@ -496,6 +515,49 @@ body.unauth { background: var(--ink); }
 .login-card { background: var(--surface); border-radius: 18px; padding: 26px 22px 22px; box-shadow: var(--shadow-lg); }
 .login-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
 .login-sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
+/* Orders list: status actions under each row */
+.order-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-left: 50px; }
+
+/* Greeting card (team home) */
+.greet-card {
+  background: var(--accent-soft); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+}
+.greet-card .g-hi { color: var(--muted); font-size: 12.5px; font-weight: 700; }
+.greet-card .g-t { font-weight: 800; font-size: 17px; letter-spacing: -0.01em; margin-top: 2px; }
+
+/* Quantity stepper (delivery flow) */
+.prow { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-top: 1px solid var(--border); }
+.prow:first-child { border-top: 0; }
+.prow .p-main { flex: 1; min-width: 0; }
+.prow .p-t { font-weight: 650; }
+.prow .p-s { color: var(--muted); font-size: 12.5px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--border-strong); border-radius: 10px; overflow: hidden; flex: none; }
+.stepper button { width: 38px; height: 40px; border: 0; background: none; font-size: 19px; font-weight: 600; color: var(--text); cursor: pointer; font-family: inherit; }
+.stepper button:active { background: var(--accent-soft); }
+.stepper input {
+  width: 48px; height: 40px; border: 0; text-align: center;
+  font: inherit; font-weight: 700; color: var(--text); background: none;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input:focus { outline: none; background: var(--accent-softer); }
+
+/* Sticky flow footer (delivery flow) */
+.flowfoot {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+.flowfoot .ff-total { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; margin-right: auto; font-variant-numeric: tabular-nums; }
+.flowfoot .ff-lbl { display: block; color: var(--muted); font-size: 11.5px; font-weight: 600; }
+.flowfoot .btn { width: auto; padding: 12px 22px; }
+@media (min-width: 900px) {
+  .flowfoot { position: static; border: 0; background: none; padding: 16px 0 0; }
+}
+body.has-flowfoot .container { padding-bottom: 130px; }
 
 /* Dashboard call-out banners (orders, low stock) */
 .db-banner { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; box-shadow: var(--shadow); margin-bottom: 12px; }
