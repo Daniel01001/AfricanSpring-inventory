@@ -3,6 +3,16 @@
 @{
     ViewData["Title"] = "Sign in";
     Layout = "_Layout";
+    var selected = Model.People.FirstOrDefault(p => p.Value == Model.UserId.ToString());
+    var startPin = Model.Error is not null && selected is not null;
+}
+@functions {
+    static string Initials(string? n)
+    {
+        n = (n ?? "").Trim();
+        if (n.Length == 0) return "";
+        return (n.Length >= 2 ? n.Substring(0, 2) : n).ToUpperInvariant();
+    }
 }
 
 <div class="login-wrap">
@@ -12,29 +22,88 @@
     </div>
 
     <div class="login-card">
-        <h1 class="login-title">Welcome back</h1>
-        <p class="login-sub">Sign in to log deliveries, payments and stock.</p>
+        <form method="post" id="loginForm">
+            <input type="hidden" asp-for="UserId" id="UserId" />
+            <input type="hidden" asp-for="Pin" id="Pin" />
 
-        <form method="post">
-            <div class="field">
-                <label for="UserId">Who are you?</label>
-                <select id="UserId" asp-for="UserId" asp-items="Model.People">
-                    <option value="">Select your name…</option>
-                </select>
+            <div id="step-user"@(startPin ? " hidden" : "")>
+                <h1 class="login-title">Who's signing in?</h1>
+                <p class="login-sub">Tap your name to continue.</p>
+                <div class="user-list">
+                    @foreach (var p in Model.People)
+                    {
+                        <button type="button" class="user-pick" data-id="@p.Value" data-name="@p.Text">
+                            <span class="user-av">@Initials(p.Text)</span>
+                            <span class="user-name">@p.Text</span>
+                            <svg class="icon chev"><use href="#i-chevron" /></svg>
+                        </button>
+                    }
+                </div>
             </div>
 
-            <div class="field">
-                <label for="Pin">PIN</label>
-                <input id="Pin" asp-for="Pin" type="password" inputmode="numeric"
-                       autocomplete="off" placeholder="••••" />
+            <div id="step-pin"@(startPin ? "" : " hidden")>
+                <button type="button" class="backlink" id="pinBack"><svg class="icon"><use href="#i-back" /></svg> Not you?</button>
+                <div class="pin-head">
+                    <span class="pin-av" id="pinAv">@Initials(selected?.Text)</span>
+                    <div class="pin-name" id="pinName">@selected?.Text</div>
+                    <div class="pin-hint">Enter your PIN</div>
+                </div>
+                <div class="pin-dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+                @if (Model.Error is not null)
+                {
+                    <p class="field-error" style="text-align:center;margin-top:12px">@Model.Error</p>
+                }
+                <div class="keypad" id="keypad"></div>
             </div>
-
-            @if (Model.Error is not null)
-            {
-                <p class="field-error" style="margin-bottom:12px">@Model.Error</p>
-            }
-
-            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById('loginForm');
+            const uid = document.getElementById('UserId');
+            const pinInput = document.getElementById('Pin');
+            const stepUser = document.getElementById('step-user');
+            const stepPin = document.getElementById('step-pin');
+            const dots = document.getElementById('pinDots');
+            let pin = '';
+
+            function paint() {
+                dots.querySelectorAll('i').forEach((d, i) => d.classList.toggle('on', i < pin.length));
+                pinInput.value = pin;
+            }
+            function toPin(id, name) {
+                uid.value = id;
+                document.getElementById('pinName').textContent = name;
+                document.getElementById('pinAv').textContent = (name || '').trim().substring(0, 2).toUpperCase();
+                stepUser.hidden = true; stepPin.hidden = false;
+                pin = ''; paint();
+            }
+            function tap(k) {
+                if (k === 'del') { pin = pin.slice(0, -1); paint(); return; }
+                if (pin.length >= 4) return;
+                pin += k; paint();
+                if (pin.length === 4) setTimeout(() => form.submit(), 150);
+            }
+
+            const kp = document.getElementById('keypad');
+            ['1','2','3','4','5','6','7','8','9','','0','del'].forEach((k) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                if (k === '') { b.className = 'key blank'; b.disabled = true; }
+                else if (k === 'del') { b.className = 'key act'; b.textContent = '⌫'; b.addEventListener('click', () => tap('del')); }
+                else { b.className = 'key'; b.textContent = k; b.addEventListener('click', () => tap(k)); }
+                kp.appendChild(b);
+            });
+
+            document.querySelectorAll('.user-pick').forEach((b) =>
+                b.addEventListener('click', () => toPin(b.dataset.id, b.dataset.name)));
+            const back = document.getElementById('pinBack');
+            if (back) back.addEventListener('click', () => { stepPin.hidden = true; stepUser.hidden = false; uid.value = ''; pin = ''; paint(); });
+
+            pin = ''; paint(); // clear any prefilled value on load
+        })();
+    </script>
+}

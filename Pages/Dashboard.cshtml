@@ -17,19 +17,19 @@
 <div class="kpi-grid">
     <div class="kpi">
         <div class="kpi-top">
-            <span class="kpi-label">Deliveries this week</span>
-            <span class="kpi-chip"><svg class="icon"><use href="#i-truck" /></svg></span>
-        </div>
-        <div class="kpi-value">@Model.DeliveriesThisWeek</div>
-        <div class="kpi-sub">@Model.UnitsThisWeek.ToString("0.##") units moved</div>
-    </div>
-    <div class="kpi">
-        <div class="kpi-top">
             <span class="kpi-label">Total revenue</span>
             <span class="kpi-chip"><svg class="icon"><use href="#i-trend" /></svg></span>
         </div>
         <div class="kpi-value">R @Model.TotalRevenue.ToString("N0")</div>
-        <div class="kpi-sub">@Model.TotalDeliveryCount all-time deliveries</div>
+        <div class="kpi-sub">all time</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-top">
+            <span class="kpi-label">Total deliveries</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-truck" /></svg></span>
+        </div>
+        <div class="kpi-value">@Model.TotalDeliveryCount</div>
+        <div class="kpi-sub">@Model.DeliveriesThisWeek this week · @Model.UnitsThisWeek.ToString("0.##") units</div>
     </div>
     <div class="kpi">
         <div class="kpi-top">

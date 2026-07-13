@@ -9,7 +9,7 @@
   --ink-text: rgba(255, 255, 255, 0.92);
   --ink-muted: rgba(255, 255, 255, 0.5);
   --ink-line: rgba(255, 255, 255, 0.08);
-  --ice: #34c6e6;
+  --ice: #14b8a6;
 
   /* content (light) */
   --bg: #f5f8fc;
@@ -20,11 +20,11 @@
   --border: #e7ebf0;
   --border-strong: #d3dae2;
 
-  --accent: #1e6fe6;
-  --accent-strong: #165fd0;
+  --accent: #0f766e;
+  --accent-strong: #0b5c56;
   --accent-ink: #ffffff;
-  --accent-soft: #e8f1fd;
-  --accent-softer: #f2f7fe;
+  --accent-soft: #e4f2f0;
+  --accent-softer: #f0f8f7;
 
   --danger: #c33b3f;
   --danger-soft: #fbeeee;
@@ -496,6 +496,29 @@ body.unauth { background: var(--ink); }
 .login-card { background: var(--surface); border-radius: 18px; padding: 26px 22px 22px; box-shadow: var(--shadow-lg); }
 .login-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
 .login-sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
+/* Login: pick a profile, then PIN pad */
+.user-list { display: flex; flex-direction: column; gap: 10px; }
+.user-pick { display: flex; align-items: center; gap: 12px; width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 11px 14px; cursor: pointer; text-align: left; font: inherit; color: var(--text); }
+.user-pick:hover { border-color: var(--accent); }
+.user-av { width: 42px; height: 42px; border-radius: 12px; flex: none; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+.user-name { font-weight: 700; flex: 1; }
+.user-pick .chev { color: var(--faint); margin-left: auto; }
+.backlink { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; padding: 4px 0; margin-bottom: 6px; }
+.backlink:hover { color: var(--text); }
+.pin-head { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.pin-head .pin-av { width: 58px; height: 58px; border-radius: 16px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; font-size: 20px; }
+.pin-head .pin-name { font-weight: 800; font-size: 17px; margin-top: 12px; letter-spacing: -0.01em; }
+.pin-head .pin-hint { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+.pin-dots { display: flex; gap: 14px; justify-content: center; margin: 20px 0 6px; }
+.pin-dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--border-strong); transition: background .12s; }
+.pin-dots i.on { background: var(--accent); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.key { height: 58px; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); font: inherit; font-size: 22px; font-weight: 600; color: var(--text); cursor: pointer; }
+.key:hover { background: var(--accent-softer); }
+.key:active { background: var(--accent-soft); }
+.key.blank { border: 0; background: none; cursor: default; }
+.key.act { font-size: 20px; color: var(--muted); }
 
 /* Columns / feed ------------------------------------------------------- */
 .cols { display: grid; gap: 12px; }
