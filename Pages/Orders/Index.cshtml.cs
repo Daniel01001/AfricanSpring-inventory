@@ -91,6 +91,37 @@ public class IndexModel : PageModel
             _audit.Add(User, "order.paid", $"{reference} paid — R{amount:0.00}, balance settled");
         }
 
+        // Cancelled → undo any ledger entries this order created (delete the
+        // delivery + its stock movements, and the payment), restoring stock and balance.
+        if (status == OrderStatus.Cancelled)
+        {
+            var reversed = false;
+            if (order.DeliveryId is int did)
+            {
+                var delivery = await _db.Deliveries
+                    .Include(d => d.Items)
+                    .Include(d => d.StockMovements)
+                    .FirstOrDefaultAsync(d => d.Id == did);
+                if (delivery is not null)
+                {
+                    _db.StockMovements.RemoveRange(delivery.StockMovements);
+                    _db.DeliveryItems.RemoveRange(delivery.Items);
+                    _db.Deliveries.Remove(delivery);
+                }
+                order.DeliveryId = null;
+                reversed = true;
+            }
+            if (order.PaymentId is int pid)
+            {
+                var payment = await _db.Payments.FindAsync(pid);
+                if (payment is not null) _db.Payments.Remove(payment);
+                order.PaymentId = null;
+                reversed = true;
+            }
+            if (reversed)
+                _audit.Add(User, "order.cancelled", $"{reference} cancelled — delivery/payment reversed, stock restored");
+        }
+
         order.Status = status;
         _audit.Add(User, "order.status", $"{reference}: {from.Label()} → {status.Label()}");
         await _db.SaveChangesAsync();

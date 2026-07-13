@@ -76,12 +76,12 @@ else
                         <button type="submit" class="btn btn-primary btn-sm">@next.Label</button>
                     </form>
                 }
-                @if (o.Status != OrderStatus.Paid && o.Status != OrderStatus.Cancelled)
+                @if (o.Status != OrderStatus.Cancelled)
                 {
                     <form method="post" asp-page-handler="Status" style="margin:0">
                         <input type="hidden" name="id" value="@o.Id" />
                         <input type="hidden" name="status" value="@OrderStatus.Cancelled" />
-                        <button type="submit" class="btn btn-sm">Cancel</button>
+                        <button type="submit" class="btn btn-sm">@(o.DeliveryId is not null ? "Cancel & reverse" : "Cancel")</button>
                     </form>
                 }
             </div>
