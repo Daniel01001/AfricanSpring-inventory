@@ -532,15 +532,24 @@ form.narrow { max-width: var(--form-w); }
 .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* Login ---------------------------------------------------------------- */
-body.unauth { background: var(--ink); }
-.login-wrap { max-width: 400px; margin: 9vh auto 40px; padding: 0 18px; }
-.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; }
-.login-brand .brand-mark { width: 40px; height: 40px; border-radius: 11px; }
+body.unauth { background: var(--surface); }
+/* Full-screen login (matches the demo) */
+.login-wrap {
+  position: fixed; inset: 0; z-index: 50;
+  background: var(--surface);
+  display: flex; flex-direction: column;
+  padding: max(32px, env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.login-brand { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 420px; margin: 0 auto; }
+.login-brand .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
 .login-brand .brand-mark .icon { width: 21px; height: 21px; }
-.login-brand span { color: var(--ink-text); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
-.login-card { background: var(--surface); border-radius: 18px; padding: 26px 22px 22px; box-shadow: var(--shadow-lg); }
-.login-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
-.login-sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+.login-brand span { color: var(--text); font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+.login-card { width: 100%; max-width: 420px; margin: 0 auto; flex: 1; display: flex; flex-direction: column; background: none; border: 0; box-shadow: none; padding: 0; }
+.login-card > form { flex: 1; display: flex; flex-direction: column; }
+#step-user, #step-pin { flex: 1; display: flex; flex-direction: column; }
+.login-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 36px 0 4px; }
+.login-sub { color: var(--muted); margin: 0 0 22px; font-size: 14.5px; }
 
 /* Orders list: status actions under each row */
 .order-actions { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; padding-left: 50px; }
@@ -611,7 +620,7 @@ body.has-flowfoot .container { padding-bottom: 130px; }
 .pin-dots { display: flex; gap: 14px; justify-content: center; margin: 20px 0 6px; }
 .pin-dots i { width: 13px; height: 13px; border-radius: 50%; background: var(--border-strong); transition: background .12s; }
 .pin-dots i.on { background: var(--accent); }
-.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: auto; padding-top: 24px; }
 .key { height: 58px; border: 1px solid var(--border); border-radius: 15px; background: var(--surface); font: inherit; font-size: 22px; font-weight: 600; color: var(--text); cursor: pointer; }
 .key:hover { background: var(--accent-softer); }
 .key:active { background: var(--accent-soft); }
