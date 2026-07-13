@@ -159,7 +159,7 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
         await db.Stores.AnyAsync(s => s.Id == sid && s.CustomerAccountId == accountId))
         storeId = sid;
 
-    db.Orders.Add(new Order
+    var order = new Order
     {
         CustomerName = Cap(name, 80),
         Phone = Cap(phone, 40),
@@ -169,7 +169,8 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
         CustomerAccountId = accountId,
         StoreId = storeId,
         Source = accountId is null ? "website" : "portal"
-    });
+    };
+    db.Orders.Add(order);
     await db.SaveChangesAsync();
 
     // Ping the app users' devices. Never let a notification failure fail the order.
@@ -182,7 +183,7 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
     }
     catch { /* best-effort */ }
 
-    return Results.Ok(new { ok = true });
+    return Results.Ok(new { ok = true, reference = $"AS-{order.Id:D4}" });
 })
     .AllowAnonymous()
     .RequireCors("PublicSite")
