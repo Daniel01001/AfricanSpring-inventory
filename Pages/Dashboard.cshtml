@@ -6,12 +6,11 @@
     ViewData["Wide"] = true;
 }
 
-<div class="page-head" style="margin-bottom:22px">
+<div class="page-head" style="margin-bottom:18px">
     <div>
         <h1 class="page-title">Dashboard</h1>
         <p class="page-sub" style="margin:0">A quick pulse on deliveries, revenue and stock.</p>
     </div>
-    <a class="btn btn-primary btn-sm" asp-page="/Deliveries/Create">Log delivery <svg class="icon"><use href="#i-chevron" /></svg></a>
 </div>
 
 <div class="kpi-grid">
@@ -47,60 +46,63 @@
         <div class="kpi-value">@Model.StockUnits.ToString("0.##")</div>
         <div class="kpi-sub">@Model.ProductCount products</div>
     </div>
-    <div class="kpi">
-        <div class="kpi-top">
-            <span class="kpi-label">New orders</span>
-            <span class="kpi-chip"><svg class="icon"><use href="#i-order" /></svg></span>
-        </div>
-        <div class="kpi-value">@Model.NewOrders</div>
-        <div class="kpi-sub"><a class="view-all" asp-page="/Orders/Index">From the website →</a></div>
-    </div>
 </div>
 
-@if (Model.LowStock.Count > 0)
+<div style="margin-top:14px">
+    @if (Model.NewOrders > 0)
+    {
+        <a class="db-banner accent" asp-page="/Orders/Index">
+            <span class="b-ic"><svg class="icon"><use href="#i-order" /></svg></span>
+            <span>
+                <span class="b-t">@Model.NewOrders new website order@(Model.NewOrders == 1 ? "" : "s")</span>
+                <span class="b-s">Tap to review and confirm</span>
+            </span>
+            <svg class="icon b-chev"><use href="#i-chevron" /></svg>
+        </a>
+    }
+
+    @if (Model.LowStock.Count > 0)
+    {
+        <a class="db-banner warn" asp-page="/Stock/Index">
+            <span class="b-ic"><svg class="icon"><use href="#i-snowflake" /></svg></span>
+            <span>
+                <span class="b-t">@Model.LowStock.Count product@(Model.LowStock.Count == 1 ? "" : "s") running low</span>
+                <span class="b-s">@string.Join(", ", Model.LowStock.Select(s => s.Name))</span>
+            </span>
+            <svg class="icon b-chev"><use href="#i-chevron" /></svg>
+        </a>
+    }
+</div>
+
+<a class="btn btn-primary btn-block" asp-page="/Deliveries/Create">
+    <svg class="icon"><use href="#i-truck" /></svg> Log a delivery
+</a>
+
+<div class="page-head" style="margin:24px 0 10px">
+    <h2 class="section-label" style="margin:0">Recent deliveries</h2>
+    <a class="view-all" asp-page="/Activity">View all →</a>
+</div>
+@if (Model.Recent.Count == 0)
 {
-    <div class="section-label">Low stock</div>
+    <div class="empty">No deliveries yet.</div>
+}
+else
+{
     <div class="list">
-        @foreach (var s in Model.LowStock)
+        @foreach (var d in Model.Recent)
         {
-            <a class="list-row" asp-page="/Stock/Index">
+            <a class="list-row" asp-page="/Stores/Details" asp-route-id="@d.StoreId">
                 <span class="row-main">
-                    <span class="primary">@s.Name</span><br />
-                    <span class="secondary">@s.OnHand.ToString("0.##") on hand · alert at @s.Threshold.ToString("0.##")</span>
+                    <span class="primary">@d.Store</span><br />
+                    <span class="secondary">@d.Date.ToString("dd MMM") · @d.Items</span>
                 </span>
-                <span class="badge declined">Low</span>
+                <span class="amount">R @d.Total.ToString("N2")</span>
             </a>
         }
     </div>
 }
 
 <div class="cols" style="margin-top:20px">
-    <div class="card">
-        <div class="page-head" style="margin-bottom:14px">
-            <h2 class="section-label" style="margin:0">Recent deliveries</h2>
-            <a class="view-all" asp-page="/Activity">View all →</a>
-        </div>
-        @if (Model.Recent.Count == 0)
-        {
-            <div class="empty">No deliveries yet.</div>
-        }
-        else
-        {
-            <div class="list" style="border:none;box-shadow:none">
-                @foreach (var d in Model.Recent)
-                {
-                    <a class="list-row" asp-page="/Stores/Details" asp-route-id="@d.StoreId" style="padding-left:0;padding-right:0">
-                        <span class="row-main">
-                            <span class="primary">@d.Store</span><br />
-                            <span class="secondary">@d.Date.ToString("dd MMM") · @d.Items</span>
-                        </span>
-                        <span class="amount">R @d.Total.ToString("N2")</span>
-                    </a>
-                }
-            </div>
-        }
-    </div>
-
     <div class="card">
         <h2 class="section-label" style="margin:0 0 6px">Pipeline</h2>
         @foreach (var p in Model.Pipeline)
@@ -111,18 +113,20 @@
             </div>
         }
     </div>
-</div>
 
-@if (Model.Outstanding.Count > 0)
-{
-    <div class="section-label">Outstanding by store</div>
-    <div class="list">
-        @foreach (var o in Model.Outstanding)
-        {
-            <div class="list-row">
-                <span class="row-main"><span class="primary">@o.Name</span></span>
-                <span class="amount" style="color:var(--danger)">R @o.Amount.ToString("N2")</span>
+    @if (Model.Outstanding.Count > 0)
+    {
+        <div class="card">
+            <h2 class="section-label" style="margin:0 0 8px">Outstanding by store</h2>
+            <div class="list" style="border:none;box-shadow:none">
+                @foreach (var o in Model.Outstanding)
+                {
+                    <div class="list-row" style="padding-left:0;padding-right:0">
+                        <span class="row-main"><span class="primary">@o.Name</span></span>
+                        <span class="amount" style="color:var(--danger)">R @o.Amount.ToString("N2")</span>
+                    </div>
+                }
             </div>
-        }
-    </div>
-}
+        </div>
+    }
+</div>

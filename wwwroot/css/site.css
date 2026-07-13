@@ -20,11 +20,11 @@
   --border: #e7ebf0;
   --border-strong: #d3dae2;
 
-  --accent: #0f766e;
-  --accent-strong: #0b5c56;
+  --accent: #2563eb;
+  --accent-strong: #1d4fd7;
   --accent-ink: #ffffff;
-  --accent-soft: #e4f2f0;
-  --accent-softer: #f0f8f7;
+  --accent-soft: #e9f0fe;
+  --accent-softer: #f2f6fe;
 
   --danger: #c33b3f;
   --danger-soft: #fbeeee;
@@ -79,10 +79,10 @@ a { color: var(--accent); text-decoration: none; }
 /* Brand mark ---------------------------------------------------------- */
 .brand-mark {
   width: 34px; height: 34px; border-radius: 10px;
-  background: var(--ice);
+  background: var(--accent);
   display: flex; align-items: center; justify-content: center; flex: none;
 }
-.brand-mark .icon { width: 19px; height: 19px; stroke: var(--ink); stroke-width: 2.2; }
+.brand-mark .icon { width: 19px; height: 19px; stroke: var(--accent-ink); stroke-width: 2.2; }
 
 /* Sidebar ------------------------------------------------------------- */
 .sidebar {
@@ -496,6 +496,16 @@ body.unauth { background: var(--ink); }
 .login-card { background: var(--surface); border-radius: 18px; padding: 26px 22px 22px; box-shadow: var(--shadow-lg); }
 .login-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
 .login-sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
+/* Dashboard call-out banners (orders, low stock) */
+.db-banner { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 14px; border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; box-shadow: var(--shadow); margin-bottom: 12px; }
+.db-banner .b-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+.db-banner.accent .b-ic { background: var(--accent-soft); color: var(--accent); }
+.db-banner.warn { background: var(--warn-soft); border-color: transparent; }
+.db-banner.warn .b-ic { background: #fff; color: var(--warn); }
+.db-banner .b-t { display: block; font-weight: 700; font-size: 14px; }
+.db-banner .b-s { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+.db-banner .b-chev { margin-left: auto; color: var(--faint); }
 
 /* Login: pick a profile, then PIN pad */
 .user-list { display: flex; flex-direction: column; gap: 10px; }

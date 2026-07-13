@@ -3,7 +3,7 @@
     var tab = ViewData["Tab"] as string;
     var isOwner = User.IsInRole("Owner");
     var wide = ViewData["Wide"] as bool? == true;
-    var moreTabs = new[] { "orders", "products", "fridges", "users", "activity", "more" };
+    var moreTabs = new[] { "products", "fridges", "users", "activity", "more" };
     var onMore = tab is not null && moreTabs.Contains(tab);
 }
 <!DOCTYPE html>
@@ -142,6 +142,9 @@
             </a>
             <a class="tab @(tab == "stock" ? "on" : "")" asp-page="/Stock/Index">
                 <svg class="icon"><use href="#i-snowflake" /></svg><span>Stock</span>
+            </a>
+            <a class="tab @(tab == "orders" ? "on" : "")" asp-page="/Orders/Index">
+                <svg class="icon"><use href="#i-order" /></svg><span>Orders</span>
             </a>
             <a class="tab @(onMore ? "on" : "")" asp-page="/More">
                 <svg class="icon"><use href="#i-more" /></svg><span>More</span>
