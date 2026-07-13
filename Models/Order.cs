@@ -22,6 +22,13 @@ public class Order
     public int? ProductId { get; set; }
     public Product? Product { get; set; }
 
+    // Set when the order came from a signed-in portal customer (else guest).
+    public int? CustomerAccountId { get; set; }
+    public CustomerAccount? CustomerAccount { get; set; }
+
+    public int? StoreId { get; set; }
+    public Store? Store { get; set; }
+
     [MaxLength(1000)]
     public string? Details { get; set; }
 

@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
+    public DbSet<CustomerAccount> CustomerAccounts => Set<CustomerAccount>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -85,6 +86,18 @@ public class AppDbContext : DbContext
         b.Entity<PushDevice>()
             .HasOne(x => x.User).WithMany()
             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+
+        // Portal customer accounts: one phone = one account; owns 0..n stores.
+        b.Entity<CustomerAccount>().HasIndex(x => x.Phone).IsUnique();
+        b.Entity<Store>()
+            .HasOne(s => s.CustomerAccount).WithMany(a => a.Stores)
+            .HasForeignKey(s => s.CustomerAccountId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Order>()
+            .HasOne(o => o.CustomerAccount).WithMany()
+            .HasForeignKey(o => o.CustomerAccountId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Order>()
+            .HasOne(o => o.Store).WithMany()
+            .HasForeignKey(o => o.StoreId).OnDelete(DeleteBehavior.SetNull);
 
         b.Entity<User>().HasIndex(x => x.Name);
         b.Entity<Delivery>().HasIndex(x => x.DeliveryDate);

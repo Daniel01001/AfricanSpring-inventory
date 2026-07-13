@@ -49,6 +49,9 @@ builder.Services.AddRazorPages();
 // Sends Web Push notifications to subscribed app devices when orders arrive.
 builder.Services.AddScoped<PushNotifier>();
 
+// Signed bearer tokens for the customer ordering portal.
+builder.Services.AddSingleton<PortalToken>();
+
 // Public API consumed by the marketing site (different origin): the product feed
 // (GET) and order submissions (POST). No credentials, so any origin is safe.
 builder.Services.AddCors(options =>
@@ -130,7 +133,7 @@ app.MapGet("/health", () => Results.Ok("healthy")).AllowAnonymous();
 
 // Public order intake from the marketing site. Anonymous + CORS + rate limited,
 // with a honeypot field to catch bots.
-app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier push) =>
+app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier push, PortalToken tokens, HttpContext http) =>
 {
     // Bots fill hidden fields a human never sees. Pretend success so we don't tip them off.
     if (!string.IsNullOrWhiteSpace(dto.Website))
@@ -148,6 +151,14 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
     int? productId = product.Length == 0 ? null
         : await db.Products.Where(p => p.Name == product).Select(p => (int?)p.Id).FirstOrDefaultAsync();
 
+    // If a signed-in portal customer sent a token, link the order to them and,
+    // when the chosen store is really theirs, to that store's ledger.
+    int? accountId = PortalAccountId(http, tokens);
+    int? storeId = null;
+    if (accountId is not null && dto.StoreId is int sid &&
+        await db.Stores.AnyAsync(s => s.Id == sid && s.CustomerAccountId == accountId))
+        storeId = sid;
+
     db.Orders.Add(new Order
     {
         CustomerName = Cap(name, 80),
@@ -155,7 +166,9 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
         ProductName = Cap(product, 120),
         ProductId = productId,
         Details = string.IsNullOrWhiteSpace(dto.Details) ? null : Cap(dto.Details.Trim(), 1000),
-        Source = "website"
+        CustomerAccountId = accountId,
+        StoreId = storeId,
+        Source = accountId is null ? "website" : "portal"
     });
     await db.SaveChangesAsync();
 
@@ -223,6 +236,105 @@ app.MapPost("/push/unsubscribe", async (PushUnsubDto dto, AppDbContext db) =>
     return Results.Ok(new { ok = true });
 });
 
+// --- Customer ordering portal (public site accounts) ---
+
+static string Trunc(string s, int max) => s.Length > max ? s[..max] : s;
+
+static int? PortalAccountId(HttpContext ctx, PortalToken tokens)
+{
+    var auth = ctx.Request.Headers.Authorization.ToString();
+    return auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+        ? tokens.Validate(auth["Bearer ".Length..].Trim())
+        : null;
+}
+
+// Self-register: create an account + a Pending store (owns its own fridge).
+app.MapPost("/api/portal/register", async (PortalRegisterDto dto, AppDbContext db, PortalToken tokens) =>
+{
+    if (!tokens.Configured) return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    var phone = PhoneNormalizer.Normalize(dto.Phone);
+    var name = (dto.Name ?? "").Trim();
+    if (phone.Length < 6 || name.Length == 0 || string.IsNullOrWhiteSpace(dto.Password) || dto.Password!.Length < 6)
+        return Results.BadRequest(new { error = "Name, phone, and a password of at least 6 characters are required." });
+    if (await db.CustomerAccounts.AnyAsync(a => a.Phone == phone))
+        return Results.Conflict(new { error = "An account with this phone already exists. Please log in." });
+
+    var account = new CustomerAccount { Phone = phone, Name = Trunc(name, 120), PasswordHash = PinHasher.Hash(dto.Password), Source = "website" };
+    db.Stores.Add(new Store
+    {
+        Name = Trunc(name, 120),
+        Phone = phone,
+        Location = string.IsNullOrWhiteSpace(dto.Address) ? null : Trunc(dto.Address.Trim(), 160),
+        Status = StoreStatus.Prospect,
+        FridgeArrangement = FridgeArrangement.StoreOwnsFridge,
+        CustomerAccount = account
+    });
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { token = tokens.Create(account.Id, TimeSpan.FromDays(30)), mustChangePassword = false, name = account.Name });
+})
+    .AllowAnonymous().RequireCors("PublicSite").RequireRateLimiting("orders");
+
+app.MapPost("/api/portal/login", async (PortalLoginDto dto, AppDbContext db, PortalToken tokens) =>
+{
+    if (!tokens.Configured) return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    var phone = PhoneNormalizer.Normalize(dto.Phone);
+    var account = await db.CustomerAccounts.FirstOrDefaultAsync(a => a.Phone == phone && a.IsActive);
+    if (account is null || string.IsNullOrEmpty(dto.Password) || !PinHasher.Verify(dto.Password, account.PasswordHash))
+        return Results.Json(new { error = "That phone or password is wrong." }, statusCode: StatusCodes.Status401Unauthorized);
+    account.LastLoginAt = DateTime.UtcNow;
+    await db.SaveChangesAsync();
+    return Results.Ok(new { token = tokens.Create(account.Id, TimeSpan.FromDays(30)), mustChangePassword = account.MustChangePassword, name = account.Name });
+})
+    .AllowAnonymous().RequireCors("PublicSite").RequireRateLimiting("orders");
+
+app.MapPost("/api/portal/change-password", async (PortalChangePwDto dto, AppDbContext db, PortalToken tokens, HttpContext http) =>
+{
+    var id = PortalAccountId(http, tokens);
+    if (id is null) return Results.Unauthorized();
+    if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword!.Length < 6)
+        return Results.BadRequest(new { error = "Password must be at least 6 characters." });
+    var account = await db.CustomerAccounts.FindAsync(id.Value);
+    if (account is null || !account.IsActive) return Results.Unauthorized();
+    account.PasswordHash = PinHasher.Hash(dto.NewPassword);
+    account.MustChangePassword = false;
+    await db.SaveChangesAsync();
+    return Results.Ok(new { ok = true });
+})
+    .AllowAnonymous().RequireCors("PublicSite");
+
+app.MapGet("/api/portal/me", async (AppDbContext db, PortalToken tokens, HttpContext http) =>
+{
+    var id = PortalAccountId(http, tokens);
+    if (id is null) return Results.Unauthorized();
+    var account = await db.CustomerAccounts.FindAsync(id.Value);
+    if (account is null || !account.IsActive) return Results.Unauthorized();
+
+    var stores = await db.Stores.Where(s => s.CustomerAccountId == account.Id).OrderBy(s => s.Name).ToListAsync();
+    var list = new List<object>();
+    foreach (var s in stores)
+    {
+        var delivered = await db.DeliveryItems.Where(i => i.Delivery!.StoreId == s.Id).SumAsync(i => (decimal?)i.LineTotal) ?? 0m;
+        var paid = await db.Payments.Where(p => p.StoreId == s.Id).SumAsync(p => (decimal?)p.Amount) ?? 0m;
+        list.Add(new { id = s.Id, name = s.Name, location = s.Location, status = s.Status.ToString(), outstanding = delivered - paid });
+    }
+    return Results.Ok(new { name = account.Name, phone = account.Phone, mustChangePassword = account.MustChangePassword, stores = list });
+})
+    .AllowAnonymous().RequireCors("PublicSite");
+
+app.MapGet("/api/portal/orders", async (AppDbContext db, PortalToken tokens, HttpContext http) =>
+{
+    var id = PortalAccountId(http, tokens);
+    if (id is null) return Results.Unauthorized();
+    var orders = await db.Orders
+        .Where(o => o.CustomerAccountId == id.Value)
+        .OrderByDescending(o => o.CreatedAt).Take(50)
+        .Select(o => new { o.Id, o.ProductName, o.Details, status = o.Status.ToString(), storeId = o.StoreId, createdAt = o.CreatedAt })
+        .ToListAsync();
+    return Results.Ok(orders);
+})
+    .AllowAnonymous().RequireCors("PublicSite");
+
 // Apply migrations and seed on startup so a fresh Render DB is ready to go.
 using (var scope = app.Services.CreateScope())
 {
@@ -234,8 +346,14 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 
 // Shape of the JSON body posted by the marketing site's order form.
-// `Website` is the honeypot — real users leave it blank.
-record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website);
+// `Website` is the honeypot — real users leave it blank. `StoreId` is set by a
+// signed-in portal customer choosing which of their stores to order for.
+record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website, int? StoreId);
+
+// Customer portal request bodies.
+record PortalRegisterDto(string? Name, string? Phone, string? Password, string? Address);
+record PortalLoginDto(string? Phone, string? Password);
+record PortalChangePwDto(string? NewPassword);
 
 // Push subscription payloads from the browser.
 record PushSubDto(string? Endpoint, string? P256dh, string? Auth);

@@ -27,6 +27,10 @@ public class Store
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+    // Set when a customer portal account owns/manages this store (nullable).
+    public int? CustomerAccountId { get; set; }
+    public CustomerAccount? CustomerAccount { get; set; }
+
     public ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<Fridge> Fridges { get; set; } = new List<Fridge>();
