@@ -1,0 +1,30 @@
+@page
+@model AfricanSpringInventory.Pages.Audit.IndexModel
+@{
+    ViewData["Title"] = "Audit log";
+    ViewData["Tab"] = "audit";
+    ViewData["Sub"] = "Who did what";
+}
+
+<h1 class="page-title">Audit log</h1>
+<p class="page-sub">A record of key actions taken in the app.</p>
+
+@if (Model.Entries.Count == 0)
+{
+    <div class="empty" style="margin-top:18px">Nothing logged yet.</div>
+}
+else
+{
+    <div class="list" style="margin-top:6px">
+        @foreach (var e in Model.Entries)
+        {
+            <div class="list-row">
+                <span class="avatar ghost">@(string.IsNullOrWhiteSpace(e.UserName) ? "?" : e.UserName.Substring(0, 1).ToUpper())</span>
+                <span class="row-main">
+                    <span class="primary">@e.Summary</span><br />
+                    <span class="secondary">@(string.IsNullOrWhiteSpace(e.UserName) ? "System" : e.UserName) &middot; @e.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")</span>
+                </span>
+            </div>
+        }
+    </div>
+}

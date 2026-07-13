@@ -43,9 +43,10 @@ public static class DisplayExtensions
     public static string Badge(this OrderStatus s) => s switch
     {
         OrderStatus.New => "prospect",
-        OrderStatus.Confirmed => "intalks",
+        OrderStatus.Confirmed => "prospect",
         OrderStatus.OutForDelivery => "intalks",
-        OrderStatus.Delivered => "supplying",
+        OrderStatus.Delivered => "intalks",
+        OrderStatus.Paid => "supplying",
         OrderStatus.Cancelled => "declined",
         _ => ""
     };

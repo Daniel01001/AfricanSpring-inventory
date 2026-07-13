@@ -4,7 +4,7 @@
     var tab = ViewData["Tab"] as string;
     var isOwner = User.IsInRole("Owner");
     var wide = ViewData["Wide"] as bool? == true;
-    var moreTabs = new[] { "approvals", "products", "fridges", "users", "customers", "activity", "more" };
+    var moreTabs = new[] { "approvals", "products", "fridges", "users", "customers", "activity", "audit", "more" };
     var onMore = tab is not null && moreTabs.Contains(tab);
     var newOrders = signedIn ? Db.Orders.Count(o => o.Status == OrderStatus.New) : 0;
     var pendingApprovals = signedIn && isOwner

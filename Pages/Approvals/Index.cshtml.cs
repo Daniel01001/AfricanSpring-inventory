@@ -1,5 +1,6 @@
 using AfricanSpringInventory.Data;
 using AfricanSpringInventory.Models;
+using AfricanSpringInventory.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -11,7 +12,8 @@ namespace AfricanSpringInventory.Pages.Approvals;
 public class IndexModel : PageModel
 {
     private readonly AppDbContext _db;
-    public IndexModel(AppDbContext db) => _db = db;
+    private readonly AuditLog _audit;
+    public IndexModel(AppDbContext db, AuditLog audit) { _db = db; _audit = audit; }
 
     public record Row(int Id, string Name, string? Location, string Phone, string Customer, DateTime CreatedAt);
     public List<Row> Pending { get; set; } = new();
@@ -36,6 +38,7 @@ public class IndexModel : PageModel
         {
             store.Status = status;
             store.UpdatedAt = DateTime.UtcNow;
+            _audit.Add(User, "store.approval", $"{store.Name} {(status == StoreStatus.Supplying ? "approved" : "declined")}");
             await _db.SaveChangesAsync();
         }
         return RedirectToPage();

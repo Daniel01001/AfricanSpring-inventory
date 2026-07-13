@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AfricanSpringInventory.Data;
 using AfricanSpringInventory.Models;
+using AfricanSpringInventory.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,7 +12,8 @@ namespace AfricanSpringInventory.Pages.Deliveries;
 public class CreateModel : PageModel
 {
     private readonly AppDbContext _db;
-    public CreateModel(AppDbContext db) => _db = db;
+    private readonly AuditLog _audit;
+    public CreateModel(AppDbContext db, AuditLog audit) { _db = db; _audit = audit; }
 
     public class LineInput
     {
@@ -97,6 +99,8 @@ public class CreateModel : PageModel
         }
 
         _db.Deliveries.Add(delivery);
+        var storeName = Stores.FirstOrDefault(s => s.Value == StoreId.ToString())?.Text ?? $"store #{StoreId}";
+        _audit.Add(User, "delivery.created", $"Delivery to {storeName} — R{delivery.Items.Sum(i => i.LineTotal):0.00}");
         await _db.SaveChangesAsync();
         return RedirectToPage("/Stores/Details", new { id = StoreId });
     }

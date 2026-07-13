@@ -16,8 +16,10 @@ public class AppDbContext : DbContext
     public DbSet<Fridge> Fridges => Set<Fridge>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<PushDevice> PushDevices => Set<PushDevice>();
     public DbSet<CustomerAccount> CustomerAccounts => Set<CustomerAccount>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -98,6 +100,23 @@ public class AppDbContext : DbContext
         b.Entity<Order>()
             .HasOne(o => o.Store).WithMany()
             .HasForeignKey(o => o.StoreId).OnDelete(DeleteBehavior.SetNull);
+
+        // An order can spawn a Delivery (when Delivered) and a Payment (when Paid).
+        b.Entity<Order>()
+            .HasOne(o => o.Delivery).WithMany()
+            .HasForeignKey(o => o.DeliveryId).OnDelete(DeleteBehavior.SetNull);
+        b.Entity<Order>()
+            .HasOne(o => o.Payment).WithMany()
+            .HasForeignKey(o => o.PaymentId).OnDelete(DeleteBehavior.SetNull);
+
+        b.Entity<OrderItem>()
+            .HasOne(i => i.Order).WithMany(o => o.Items)
+            .HasForeignKey(i => i.OrderId).OnDelete(DeleteBehavior.Cascade);
+        b.Entity<OrderItem>()
+            .HasOne(i => i.Product).WithMany()
+            .HasForeignKey(i => i.ProductId).OnDelete(DeleteBehavior.SetNull);
+
+        b.Entity<AuditEntry>().HasIndex(x => x.CreatedAt);
 
         b.Entity<User>().HasIndex(x => x.Name);
         b.Entity<Delivery>().HasIndex(x => x.DeliveryDate);

@@ -12,7 +12,8 @@ namespace AfricanSpringInventory.Pages.Stores;
 public class DetailsModel : PageModel
 {
     private readonly AppDbContext _db;
-    public DetailsModel(AppDbContext db) => _db = db;
+    private readonly AuditLog _audit;
+    public DetailsModel(AppDbContext db, AuditLog audit) { _db = db; _audit = audit; }
 
     public Store Store { get; set; } = default!;
     public CustomerAccount? Account { get; set; }
@@ -95,6 +96,7 @@ public class DetailsModel : PageModel
             if (PhoneNormalizer.Normalize(s.Phone) == phone)
                 s.CustomerAccount = account;
 
+        _audit.Add(User, "access.granted", $"Online access granted for {store.Name} ({phone})");
         await _db.SaveChangesAsync();
         return RedirectToPage(new { id });
     }
@@ -107,6 +109,7 @@ public class DetailsModel : PageModel
         var temp = TempPassword();
         store.CustomerAccount.PasswordHash = PinHasher.Hash(temp);
         store.CustomerAccount.MustChangePassword = true;
+        _audit.Add(User, "access.reset", $"Password reset for {store.CustomerAccount.Name} ({store.CustomerAccount.Phone})");
         await _db.SaveChangesAsync();
 
         GrantedPassword = temp;

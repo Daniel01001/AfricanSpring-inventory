@@ -52,6 +52,9 @@ builder.Services.AddScoped<PushNotifier>();
 // Signed bearer tokens for the customer ordering portal.
 builder.Services.AddSingleton<PortalToken>();
 
+// Records who did what across the app.
+builder.Services.AddScoped<AuditLog>();
+
 // Public API consumed by the marketing site (different origin): the product feed
 // (GET) and order submissions (POST). No credentials, so any origin is safe.
 builder.Services.AddCors(options =>
@@ -182,6 +185,29 @@ app.MapPost("/api/orders", async (OrderDto dto, AppDbContext db, PushNotifier pu
         StoreId = storeId,
         Source = accountId is null ? "website" : "portal"
     };
+
+    // Structured line items (portal) so a Delivered order can become a Delivery.
+    // Prices are rehydrated from the DB — never trusted from the client.
+    if (dto.Items is { Count: > 0 })
+    {
+        var ids = dto.Items.Select(i => i.ProductId).Distinct().ToList();
+        var prods = await db.Products.Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
+        foreach (var it in dto.Items)
+        {
+            if (it.Quantity <= 0 || !prods.TryGetValue(it.ProductId, out var pr)) continue;
+            order.Items.Add(new OrderItem
+            {
+                ProductId = pr.Id,
+                ProductName = pr.Name,
+                Quantity = it.Quantity,
+                UnitPrice = pr.UnitPrice,
+                LineTotal = it.Quantity * pr.UnitPrice
+            });
+        }
+        if (order.Items.Count > 0)
+            order.ProductName = Cap(string.Join(", ", order.Items.Select(i => $"{i.Quantity:0.##}x {i.ProductName}")), 120);
+    }
+
     db.Orders.Add(order);
     await db.SaveChangesAsync();
 
@@ -385,7 +411,8 @@ app.Run();
 // Shape of the JSON body posted by the marketing site's order form.
 // `Website` is the honeypot — real users leave it blank. `StoreId` is set by a
 // signed-in portal customer choosing which of their stores to order for.
-record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website, int? StoreId);
+record OrderDto(string? Name, string? Phone, string? Product, string? Details, string? Website, int? StoreId, List<OrderItemDto>? Items);
+record OrderItemDto(int ProductId, decimal Quantity);
 
 // Customer portal request bodies.
 record PortalRegisterDto(string? Name, string? Phone, string? Password, string? Address);

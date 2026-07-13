@@ -34,6 +34,14 @@ public class Order
 
     public OrderStatus Status { get; set; } = OrderStatus.New;
 
+    // Ledger entries this order created when it was Delivered / Paid (idempotency).
+    public int? DeliveryId { get; set; }
+    public Delivery? Delivery { get; set; }
+    public int? PaymentId { get; set; }
+    public Payment? Payment { get; set; }
+
+    public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
+
     [MaxLength(30)]
     public string Source { get; set; } = "website";
 

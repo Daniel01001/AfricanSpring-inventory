@@ -49,5 +49,6 @@ public enum OrderStatus
     Confirmed,
     OutForDelivery,
     Delivered,
+    Paid,
     Cancelled
 }

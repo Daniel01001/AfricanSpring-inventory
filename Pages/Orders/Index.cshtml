@@ -4,13 +4,16 @@
     ViewData["Title"] = "Orders";
     ViewData["Tab"] = "orders";
     ViewData["Sub"] = "From the website";
-    var statuses = Enum.GetValues<OrderStatus>();
-
-    static string Initials(string n)
+}
+@functions {
+    static (OrderStatus? Next, string Label) NextStep(OrderStatus s) => s switch
     {
-        var parts = n.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return string.Concat(parts.Take(2).Select(w => char.ToUpper(w[0])));
-    }
+        OrderStatus.New => (OrderStatus.Confirmed, "Confirm"),
+        OrderStatus.Confirmed => (OrderStatus.OutForDelivery, "Out for delivery"),
+        OrderStatus.OutForDelivery => (OrderStatus.Delivered, "Mark delivered"),
+        OrderStatus.Delivered => (OrderStatus.Paid, "Mark paid"),
+        _ => (null, "")
+    };
 }
 
 <div class="page-head">
@@ -20,7 +23,7 @@
         <span class="badge prospect">@Model.NewCount new</span>
     }
 </div>
-<p class="page-sub">Requests placed from the website. WhatsApp is still the main chat.</p>
+<p class="page-sub">Move an order through the workflow — Delivered writes the delivery + stock, Paid settles the balance.</p>
 
 @if (Model.Orders.Count == 0)
 {
@@ -28,39 +31,60 @@
 }
 else
 {
-    <div class="list">
-        @foreach (var o in Model.Orders)
-        {
-            <div class="list-row" style="flex-wrap:wrap">
-                <span class="avatar @(o.Status == OrderStatus.New ? "" : "ghost")">@Initials(o.CustomerName)</span>
-                <span class="row-main">
-                    <span class="primary">@o.CustomerName <span class="badge">AS-@o.Id.ToString("D4")</span> <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span><br />
-                    <span class="secondary">
-                        @if (!string.IsNullOrWhiteSpace(o.ProductName))
-                        {
-                            <strong>@o.ProductName</strong> <span>·</span>
-                        }
-                        <a href="tel:@o.Phone">@o.Phone</a> · @o.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")
-                    </span>
-                    @if (!string.IsNullOrWhiteSpace(o.Details))
-                    {
-                        <br /><span class="secondary" style="white-space:pre-wrap">@o.Details</span>
-                    }
-                </span>
-                <span class="order-actions">
-                    @foreach (var s in statuses)
-                    {
-                        @if (s != o.Status)
-                        {
-                            <form method="post" asp-page-handler="Status" style="margin:0">
-                                <input type="hidden" name="id" value="@o.Id" />
-                                <input type="hidden" name="status" value="@s" />
-                                <button type="submit" class="btn btn-sm">@s.Label()</button>
-                            </form>
-                        }
-                    }
-                </span>
+    @foreach (var o in Model.Orders)
+    {
+        var next = NextStep(o.Status);
+        var total = o.Items.Sum(i => i.LineTotal);
+        <div class="card" style="margin-bottom:12px">
+            <div class="page-head" style="margin-bottom:6px">
+                <span class="primary">@o.CustomerName <span class="badge">AS-@o.Id.ToString("D4")</span> <span class="badge @o.Status.Badge()">@o.Status.Label()</span></span>
+                <span class="secondary">@o.CreatedAt.ToLocalTime().ToString("dd MMM HH:mm")</span>
             </div>
-        }
-    </div>
+            <div class="secondary"><a href="tel:@o.Phone">@o.Phone</a></div>
+
+            @if (o.Items.Count > 0)
+            {
+                <div style="margin-top:8px">
+                    @foreach (var it in o.Items)
+                    {
+                        <div class="secondary">@it.Quantity.ToString("0.##") &times; @it.ProductName &mdash; R @it.LineTotal.ToString("N2")</div>
+                    }
+                    <div style="font-weight:700;margin-top:4px">Total: R @total.ToString("N2")</div>
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(o.ProductName))
+            {
+                <div class="secondary" style="margin-top:6px"><strong>@o.ProductName</strong></div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(o.Details))
+            {
+                <p class="secondary" style="margin:6px 0 0;white-space:pre-wrap">@o.Details</p>
+            }
+
+            @if (o.DeliveryId is not null)
+            {
+                <div class="secondary" style="margin-top:8px;color:var(--ok)">Delivery logged &middot; stock deducted@(o.PaymentId is not null ? " &middot; paid" : "")</div>
+            }
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                @if (next.Next is OrderStatus ns)
+                {
+                    <form method="post" asp-page-handler="Status" style="margin:0">
+                        <input type="hidden" name="id" value="@o.Id" />
+                        <input type="hidden" name="status" value="@ns" />
+                        <button type="submit" class="btn btn-primary btn-sm">@next.Label</button>
+                    </form>
+                }
+                @if (o.Status != OrderStatus.Paid && o.Status != OrderStatus.Cancelled)
+                {
+                    <form method="post" asp-page-handler="Status" style="margin:0">
+                        <input type="hidden" name="id" value="@o.Id" />
+                        <input type="hidden" name="status" value="@OrderStatus.Cancelled" />
+                        <button type="submit" class="btn btn-sm">Cancel</button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
 }
