@@ -1,5 +1,5 @@
-// Registers the service worker and lets an app user turn on order push alerts
-// on the current device. A button with id="enablePush" wires itself up.
+// Registers the service worker and drives the "Order alerts" on/off toggle
+// (checkbox id="pushToggle" on the More page) for this device.
 
 (function () {
   const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
@@ -11,68 +11,76 @@
     return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
   }
 
-  function setBtn(btn, text, disabled) {
-    if (!btn) return;
-    btn.textContent = text;
-    btn.disabled = !!disabled;
+  async function subscribe() {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      alert('Notifications are blocked. Turn them on for this site in your browser settings, then try again.');
+      return false;
+    }
+    const reg = await navigator.serviceWorker.ready;
+    const { publicKey } = await (await fetch('/push/publickey')).json();
+    if (!publicKey) { alert('Push is not set up on the server yet.'); return false; }
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: b64ToUint8(publicKey)
+    });
+    const j = sub.toJSON();
+    await fetch('/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth })
+    });
+    return true;
   }
 
-  async function enable(btn) {
-    try {
-      if (!supported) {
-        alert('Notifications are not supported here. On iPhone/iPad, tap Share → "Add to Home Screen", open the app from that icon, then try again.');
-        return;
-      }
-      const perm = await Notification.requestPermission();
-      if (perm !== 'granted') {
-        alert('Notifications are blocked. Turn them on for this site in your browser settings, then try again.');
-        return;
-      }
-      const reg = await navigator.serviceWorker.ready;
-      const res = await fetch('/push/publickey');
-      const { publicKey } = await res.json();
-      if (!publicKey) {
-        alert('Push is not set up on the server yet.');
-        return;
-      }
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: b64ToUint8(publicKey)
-      });
-      const j = sub.toJSON();
-      await fetch('/push/subscribe', {
+  async function unsubscribe() {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) {
+      await fetch('/push/unsubscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ endpoint: sub.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth })
+        body: JSON.stringify({ endpoint: sub.endpoint })
       });
-      setBtn(btn, 'Order alerts are on ✓', true);
-    } catch (e) {
-      console.error('enable push failed', e);
-      alert('Could not turn on notifications: ' + (e && e.message ? e.message : e));
+      await sub.unsubscribe();
     }
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
-    if (!supported) return;
-    let reg;
-    try {
-      reg = await navigator.serviceWorker.register('/service-worker.js');
-    } catch (e) {
-      console.warn('SW register failed', e);
+    if (supported) {
+      try { await navigator.serviceWorker.register('/service-worker.js'); }
+      catch (e) { console.warn('SW register failed', e); }
     }
 
-    const btn = document.getElementById('enablePush');
-    if (!btn) return;
+    const toggle = document.getElementById('pushToggle');
+    if (!toggle) return;
 
-    // Reflect current state: only "on" if we actually hold a live subscription.
+    if (!supported) { toggle.disabled = true; return; }
+
+    // Reflect the current subscription state on this device.
     try {
-      const ready = await navigator.serviceWorker.ready;
-      const existing = await ready.pushManager.getSubscription();
-      if (existing && Notification.permission === 'granted') {
-        setBtn(btn, 'Order alerts are on ✓', true);
-      }
-    } catch (e) { /* leave button as-is */ }
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      toggle.checked = !!sub && Notification.permission === 'granted';
+    } catch (e) { /* leave unchecked */ }
 
-    btn.addEventListener('click', () => enable(btn));
+    toggle.addEventListener('change', async () => {
+      const wanted = toggle.checked;
+      toggle.disabled = true;
+      try {
+        if (wanted) {
+          toggle.checked = await subscribe();
+        } else {
+          await unsubscribe();
+          toggle.checked = false;
+        }
+      } catch (e) {
+        console.error('push toggle failed', e);
+        alert('Could not change notifications: ' + (e && e.message ? e.message : e));
+        toggle.checked = !wanted;
+      } finally {
+        toggle.disabled = false;
+      }
+    });
   });
 })();

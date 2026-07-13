@@ -22,9 +22,6 @@
         <h1 class="page-title">Stores</h1>
         <p class="page-sub" style="margin:0">Customers and prospects across the pipeline.</p>
     </div>
-    <a class="add-link" asp-page="/Stores/Create">
-        <svg class="icon"><use href="#i-plus" /></svg> Add
-    </a>
 </div>
 
 @if (Model.Rows.Count == 0)
@@ -33,7 +30,21 @@
 }
 else
 {
-    <div class="only-desktop table-card" style="margin-top:18px">
+    <div class="only-mobile kpi" style="margin-top:14px">
+        <div class="kpi-top">
+            <span class="kpi-label">Total outstanding</span>
+            <span class="kpi-chip"><svg class="icon"><use href="#i-wallet" /></svg></span>
+        </div>
+        <div class="kpi-value @(totalOwed > 0 ? "neg" : "")">R @totalOwed.ToString("N2")</div>
+        <div class="kpi-sub">@owingCount store(s) owe · @supplyingCount supplying</div>
+    </div>
+
+    <div class="list-head">
+        <span class="section-label" style="margin:0">Stores</span>
+        <a class="add-link" asp-page="/Stores/Create"><svg class="icon"><use href="#i-plus" /></svg> Add</a>
+    </div>
+
+    <div class="only-desktop table-card">
         <table class="data">
             <thead>
                 <tr>
@@ -78,16 +89,7 @@ else
         </table>
     </div>
 
-    <div class="only-mobile kpi" style="margin-top:14px">
-        <div class="kpi-top">
-            <span class="kpi-label">Total outstanding</span>
-            <span class="kpi-chip"><svg class="icon"><use href="#i-wallet" /></svg></span>
-        </div>
-        <div class="kpi-value @(totalOwed > 0 ? "neg" : "")">R @totalOwed.ToString("N2")</div>
-        <div class="kpi-sub">@owingCount store(s) owe · @supplyingCount supplying</div>
-    </div>
-
-    <div class="only-mobile list" style="margin-top:12px">
+    <div class="only-mobile list" style="margin-top:6px">
         @foreach (var row in Model.Rows)
         {
             <a class="list-row" asp-page="/Stores/Details" asp-route-id="@row.Store.Id">

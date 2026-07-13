@@ -56,10 +56,22 @@
 </div>
 
 <div class="section-label">Notifications</div>
-<button type="button" id="enablePush" class="btn btn-block">Turn on order alerts</button>
-<p class="page-sub" style="margin-top:8px">Get a push notification on this device when a new website order comes in. On iPhone, add the app to your Home Screen first.</p>
+<div class="list">
+    <div class="list-row">
+        <span class="avatar ghost"><svg class="icon"><use href="#i-bell" /></svg></span>
+        <span class="row-main">
+            <span class="primary">Order alerts</span><br />
+            <span class="secondary">Push when a website order comes in</span>
+        </span>
+        <label class="switch">
+            <input type="checkbox" id="pushToggle" />
+            <span class="switch-slider"></span>
+        </label>
+    </div>
+</div>
+<p class="page-sub" style="margin-top:8px">On iPhone, add the app to your Home Screen first, then turn this on.</p>
 
 <div class="section-label">Account</div>
 <form asp-page="/Logout" method="post">
-    <button type="submit" class="btn btn-block">Sign out</button>
+    <button type="submit" class="btn btn-block"><svg class="icon"><use href="#i-out" /></svg> Sign out</button>
 </form>

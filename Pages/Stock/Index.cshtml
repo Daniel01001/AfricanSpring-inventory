@@ -9,7 +9,6 @@
 
 <div class="page-head">
     <h1 class="page-title">Stock</h1>
-    <a class="add-link" asp-page="/Stock/Create"><svg class="icon"><use href="#i-plus" /></svg> Made ice</a>
 </div>
 <p class="page-sub">On hand across your products.</p>
 
@@ -19,7 +18,12 @@
 }
 else
 {
-    <div class="list" style="margin-top:6px">
+    <div class="list-head">
+        <span class="section-label" style="margin:0">On hand</span>
+        <a class="add-link" asp-page="/Stock/Create"><svg class="icon"><use href="#i-plus" /></svg> Made ice</a>
+    </div>
+
+    <div class="list">
         @foreach (var r in Model.Rows)
         {
             <div class="list-row">

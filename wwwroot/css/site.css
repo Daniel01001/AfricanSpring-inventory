@@ -316,6 +316,20 @@ a.list-row:hover { background: var(--accent-softer); }
 .stock-onhand .n { font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums; }
 .stock-onhand .u { color: var(--faint); font-size: 12px; }
 
+/* Section header row: label + inline "+ Add" action */
+.list-head { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
+.list-head .add-link { margin-left: auto; }
+
+/* On/off toggle switch */
+.switch { position: relative; display: inline-block; width: 46px; height: 28px; flex: none; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.switch-slider { position: absolute; inset: 0; background: var(--border-strong); border-radius: 999px; transition: background .18s; }
+.switch-slider::before { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .18s; }
+.switch input:checked + .switch-slider { background: var(--accent); }
+.switch input:checked + .switch-slider::before { transform: translateX(18px); }
+.switch input:disabled + .switch-slider { opacity: .5; }
+.switch input:focus-visible + .switch-slider { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* Data table ----------------------------------------------------------- */
 .table-card {
   background: var(--surface);
